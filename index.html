@@ -1,0 +1,333 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Dev Doshi — AI Automation &amp; Agentic AI Systems Architect</title>
+<meta name="description" content="Dev Doshi designs intelligent automation systems and agentic AI workflows that reason, decide, and act autonomously — 200+ automations, 100+ API integrations for clients across USA, Ireland and India.">
+<meta name="author" content="Dev Doshi">
+
+<!-- Open Graph / link previews.
+     NOTE: og:image should be an ABSOLUTE url — after deploying, replace
+     https://dev-doshi-portfolio.vercel.app with your real domain. -->
+<meta property="og:type" content="website">
+<meta property="og:title" content="Dev Doshi — AI Automation &amp; Agentic AI Systems Architect">
+<meta property="og:description" content="Intelligent automation systems and agentic AI workflows that reason, decide, and act autonomously.">
+<meta property="og:url" content="https://dev-doshi-portfolio.vercel.app/">
+<meta property="og:image" content="https://dev-doshi-portfolio.vercel.app/assets/headshot-duotone.png">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="Dev Doshi — AI Automation &amp; Agentic AI Systems Architect">
+<meta name="twitter:description" content="Intelligent automation systems and agentic AI workflows that reason, decide, and act autonomously.">
+<meta name="twitter:image" content="https://dev-doshi-portfolio.vercel.app/assets/headshot-duotone.png">
+
+<link rel="icon" type="image/svg+xml" href="assets/favicon.svg">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+
+<canvas id="field" aria-hidden="true"></canvas>
+<div class="scanlines" aria-hidden="true"></div>
+<div class="vignette" aria-hidden="true"></div>
+<div id="cursorRing" aria-hidden="true"></div>
+<div id="cursorDot" aria-hidden="true"></div>
+
+<div class="site">
+
+  <!-- ============ TOP BAR ============ -->
+  <nav class="topbar">
+    <div class="wrap nav-inner">
+      <button class="logo" data-nav="home" aria-label="Home">
+        <span class="logo-mark">&#9670;</span>
+        DEV DOSHI<span class="accent">.OS</span>
+      </button>
+      <div class="nav-links" id="navLinks"></div>
+      <div class="nav-meta">
+        <button id="themeToggle" class="meta-btn" aria-label="Toggle light/dark theme"><span class="theme-glyph">&#9680;</span> <span id="themeLabel">LIGHT</span></button>
+        <button id="cmdBtn" class="meta-btn">CMD <span class="kbd">&#8984;K</span></button>
+        <span class="online"><span class="pulse-dot"></span>ONLINE</span>
+        <span class="clock accent" id="clock">--:--:--</span>
+      </div>
+      <div class="nav-mobile">
+        <span class="online"><span class="pulse-dot"></span>ONLINE</span>
+        <button id="themeToggleM" class="icon-btn" aria-label="Toggle light/dark theme">&#9680;</button>
+        <button id="hamburger" class="icon-btn ham" aria-label="Menu" aria-expanded="false"><span></span><span></span><span></span></button>
+      </div>
+    </div>
+  </nav>
+  <div class="mobile-menu" id="mobileMenu" hidden></div>
+
+  <main>
+
+  <!-- ============ HOME ============ -->
+  <section class="page" data-page="home">
+    <div class="wrap hero">
+      <div class="hero-text">
+        <div class="kicker accent" data-reveal>// AI AUTOMATION &amp; AGENTIC AI SYSTEMS ARCHITECT</div>
+        <h1 class="hero-name" data-reveal data-rd="0.08">Dev Doshi</h1>
+        <div class="typeline" data-reveal data-rd="0.16">
+          <span class="muted">$</span> <span class="accent" id="typed"></span><span class="caret"></span>
+        </div>
+        <p class="hero-copy" data-reveal data-rd="0.24">I design intelligent automation systems and agentic AI workflows that <span class="lit">reason</span>, <span class="lit">decide</span>, and <span class="lit">act autonomously</span> &#8212; helping businesses eliminate manual bottlenecks and scale with AI-driven operations.</p>
+        <div class="cta-row" data-reveal data-rd="0.32">
+          <button class="btn btn-primary" data-nav="projects">VIEW SYSTEMS &#8594;</button>
+          <button class="btn btn-ghost" data-nav="contact">OPEN CHANNEL</button>
+        </div>
+        <div class="pipeline" data-reveal data-rd="0.4">
+          <span class="pnode"><span class="pdot"></span>TRIGGER</span>
+          <span class="pwire"><span class="ppulse"></span></span>
+          <span class="pnode"><span class="pdot"></span>ENRICH</span>
+          <span class="pwire"><span class="ppulse" style="animation-delay:.4s"></span></span>
+          <span class="pnode"><span class="pdot p2"></span>REASON</span>
+          <span class="pwire"><span class="ppulse" style="animation-delay:.8s"></span></span>
+          <span class="pnode"><span class="pdot p2"></span>DECIDE</span>
+          <span class="pwire"><span class="ppulse" style="animation-delay:1.2s"></span></span>
+          <span class="pnode pexec">EXECUTE &#10003;</span>
+        </div>
+      </div>
+
+      <!-- Holographic portrait -->
+      <div class="hero-portrait" data-reveal data-rd="0.2">
+        <div class="portrait">
+          <div class="ring ring-dash"></div>
+          <div class="ring ring-solid"></div>
+          <i class="tick tick-l"></i><i class="tick tick-r"></i><i class="tick tick-t"></i><i class="tick tick-b"></i>
+          <div class="portrait-disc">
+            <!-- REPLACE WITH YOUR REAL HEADSHOT: assets/headshot-duotone.png -->
+            <img src="assets/headshot-duotone.png" alt="Dev Doshi">
+            <div class="portrait-vignette"></div>
+            <div class="scanbeam"><div class="scan-veil"></div><div class="scan-line"></div></div>
+          </div>
+          <div class="portrait-caption">SUBJECT: DEV.DOSHI &#8212; STATUS: <span class="ok">AUTONOMOUS</span></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Live ops: terminal + stats -->
+    <div class="wrap section liveops">
+      <div class="section-head" data-reveal>
+        <span class="sec-label accent">01 // LIVE_OPS</span><span class="rule"></span>
+      </div>
+      <div class="liveops-grid">
+        <div class="card terminal corners4" data-reveal>
+          <i class="cor tr"></i><i class="cor bl"></i>
+          <div class="term-head">
+            <span>~/live_ops.log</span>
+            <span class="streaming"><span class="pulse-dot"></span>STREAMING</span>
+          </div>
+          <div class="term-body" id="logLines"></div>
+        </div>
+        <div class="stat-stack" data-stats id="statCards"></div>
+      </div>
+      <div class="card agentic" data-reveal>
+        <span class="sec-label accent2">// WHAT_IS_AGENTIC_AI</span>
+        <p>Agentic AI systems don&#8217;t just automate tasks &#8212; they <span class="accent">make decisions</span>, <span class="accent">trigger actions</span>, and operate with structured logic to drive autonomous execution.</p>
+      </div>
+    </div>
+
+    <!-- Selected systems -->
+    <div class="wrap section">
+      <div class="section-head" data-reveal>
+        <span class="sec-label accent">02 // SELECTED_SYSTEMS</span><span class="rule"></span>
+        <button class="link-btn" data-nav="projects">ALL 14 SYSTEMS &#8594;</button>
+      </div>
+      <div class="grid-cards" id="featured"></div>
+    </div>
+
+    <!-- Stack marquee -->
+    <div class="section">
+      <div class="wrap section-head" data-reveal>
+        <span class="sec-label accent">03 // STACK</span><span class="rule"></span>
+      </div>
+      <div class="marquee" data-reveal>
+        <div class="marquee-track" id="marqueeTrack"></div>
+        <div class="fade fade-l"></div><div class="fade fade-r"></div>
+      </div>
+    </div>
+
+    <!-- Off-grid teaser -->
+    <div class="wrap section section-last">
+      <div class="teaser teaser-cyan" data-nav="treks" data-reveal role="button" tabindex="0">
+        <div>
+          <div class="sec-label warn" style="margin-bottom:10px">04 // OFF_GRID_MODE</div>
+          <div class="teaser-title">When I&#8217;m not building autonomous systems, I&#8217;m in the Himalayas</div>
+          <div class="teaser-sub">HAMPTA_PASS &#183; SAR_PASS &#183; BURAN_GHATI &#8212; signal: none, clarity: maximum</div>
+        </div>
+        <span class="teaser-cta accent">DISCONNECT &#8594;</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ PROJECTS ============ -->
+  <section class="page" data-page="projects">
+    <div class="wrap page-pad">
+      <div class="kicker accent" data-reveal>SYSTEMS_INDEX // 14 DEPLOYED</div>
+      <h2 class="page-title" data-reveal data-rd="0.08">Projects</h2>
+      <p class="page-intro" data-reveal data-rd="0.16">Production automation and agentic AI systems. Select any unit to inspect the problem it eliminates and the architecture that runs it.</p>
+      <div class="chips" id="chips" data-reveal data-rd="0.2"></div>
+      <div class="grid-cards grid-fill" id="projectGrid"></div>
+    </div>
+  </section>
+
+  <!-- ============ ABOUT ============ -->
+  <section class="page" data-page="about">
+    <div class="wrap page-pad">
+      <div class="kicker accent" data-reveal>PROFILE // SYSTEM_SPECS</div>
+      <h2 class="page-title" data-reveal data-rd="0.08">Building systems<br>that think.</h2>
+      <p class="page-intro wide" data-reveal data-rd="0.16">I&#8217;m Dev Doshi, an AI Automation &amp; Agentic AI Systems Architect from India. I design end-to-end automation infrastructure &#8212; from lead enrichment engines to autonomous publishing pipelines &#8212; for clients across the USA, Ireland, India and beyond.</p>
+
+      <div class="card philosophy corners2" data-reveal>
+        <span class="sec-label accent2">// PHILOSOPHY</span>
+        <p>&#8220;Agentic AI systems do not just automate tasks &#8212; they make decisions, trigger actions, and operate with structured logic to drive autonomous execution. I help businesses move from manual effort to <span class="accent">scalable intelligence</span>.&#8221;</p>
+      </div>
+
+      <div class="about-stats" data-reveal id="aboutStats"></div>
+
+      <div class="section-head" data-reveal>
+        <span class="sec-label accent">MODULES // SKILLS</span><span class="rule"></span>
+      </div>
+      <div class="skill-grid" id="skillGrid"></div>
+
+      <div class="teaser teaser-warn" data-nav="treks" data-reveal role="button" tabindex="0">
+        <div class="teaser-text">
+          <div class="sec-label warn" style="margin-bottom:10px">// BEYOND_THE_CODE</div>
+          <div class="teaser-title sm">High-altitude Himalayan trekking keeps me grounded &#8212; quite literally.</div>
+          <p class="teaser-p">Long climbs, thin air and no Wi-Fi: the best system reset I know.</p>
+        </div>
+        <span class="teaser-cta warn">SEE THE TREKS &#8594;</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ TREKS ============ -->
+  <section class="page" data-page="treks">
+    <div class="wrap page-pad-top">
+      <div class="kicker warn" data-reveal>OFF_GRID_MODE // SIGNAL: NONE</div>
+      <h2 class="page-title trek-title" data-reveal data-rd="0.08">Trails &amp; Treks</h2>
+      <p class="page-intro wide" data-reveal data-rd="0.16">My life beyond automation. The Himalayas are where I recharge &#8212; multi-day treks through Himachal Pradesh: river crossings, alpine meadows, snow slides and passes above 13,000 ft. Select a trek to open its photo gallery.</p>
+    </div>
+    <div class="wrap" data-reveal>
+      <svg class="mountains" viewBox="0 0 1200 110" preserveAspectRatio="none" aria-hidden="true"><path d="M0 110 L140 48 L230 84 L350 22 L470 78 L600 10 L730 72 L850 34 L960 80 L1080 40 L1200 96 L1200 110 Z" fill="currentColor"></path><path d="M0 110 L90 76 L210 98 L340 60 L500 100 L640 56 L790 96 L920 66 L1060 100 L1200 72 L1200 110 Z" fill="currentColor" opacity="0.6"></path></svg>
+    </div>
+    <div class="wrap section-last trek-pad">
+      <div class="trek-grid" id="trekGrid"></div>
+    </div>
+  </section>
+
+  <!-- ============ CONTACT ============ -->
+  <section class="page" data-page="contact">
+    <div class="wrap page-pad">
+      <div class="kicker accent" data-reveal>OPEN_CHANNEL // RESPONSE_TIME: &lt;24H</div>
+      <h2 class="page-title contact-title" data-reveal data-rd="0.08">Let&#8217;s build autonomous systems that scale your business</h2>
+      <p class="page-intro" data-reveal data-rd="0.16">Tell me about the bottleneck. I&#8217;ll tell you how an agent removes it.</p>
+
+      <div class="contact-grid" id="contactGrid" data-reveal data-rd="0.2"></div>
+
+      <div class="card form-card corners2" data-reveal>
+        <div id="formIdle">
+          <div class="form-label accent">&gt; TRANSMIT_MESSAGE</div>
+          <div class="form-fields">
+            <input id="fName" type="text" placeholder="your name" autocomplete="name">
+            <input id="fEmail" type="email" placeholder="your email" autocomplete="email">
+            <textarea id="fMsg" rows="5" placeholder="what would you like to automate?"></textarea>
+            <button class="btn btn-primary" id="fSubmit">TRANSMIT &#8594;</button>
+          </div>
+        </div>
+        <div id="formSent" hidden>
+          <div class="sent-box">
+            <span class="sent-badge"><svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"></path></svg></span>
+            <div class="sent-title">TRANSMISSION RECEIVED</div>
+            <p>Thanks for reaching out &#8212; I&#8217;ll get back to you within a day.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  </main>
+
+  <!-- ============ FOOTER ============ -->
+  <footer>
+    <div class="wrap foot-inner">
+      <div class="foot-copy">&#169; 2026 DEV DOSHI &#8212; AI AUTOMATION &amp; AGENTIC AI SYSTEMS</div>
+      <div class="foot-links">
+        <span class="foot-label">EST. CONN:</span>
+        <a href="mailto:doshidev58@gmail.com" aria-label="Email"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="4" width="20" height="16" rx="2"></rect><path d="m22 7-10 6L2 7"></path></svg></a>
+        <a href="https://www.linkedin.com/in/dev-doshi-1ba604247/" target="_blank" rel="noopener" aria-label="LinkedIn"><svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor"><path d="M16 8a6 6 0 0 1 6 6v7h-4v-7a2 2 0 0 0-4 0v7h-4v-7a6 6 0 0 1 6-6zM2 9h4v12H2zM4 2a2 2 0 1 1 0 4 2 2 0 0 1 0-4z"></path></svg></a>
+      </div>
+    </div>
+  </footer>
+</div>
+
+<!-- ============ PROJECT MODAL ============ -->
+<div class="overlay" id="projectModal" hidden>
+  <div class="dialog corners4" role="dialog" aria-modal="true">
+    <i class="cor tr"></i><i class="cor bl"></i>
+    <button class="close-btn" data-close aria-label="Close">&#10005;</button>
+    <div class="modal-kicker">SYSTEM <span id="opNum"></span> // <span class="accent upper" id="opCat"></span></div>
+    <h3 id="opTitle"></h3>
+    <div class="tool-row lg" id="opTools"></div>
+    <div class="ps-stack">
+      <div class="ps-box">
+        <div class="ps-label warn">&#9888; THE PROBLEM</div>
+        <p id="opProblem"></p>
+      </div>
+      <div class="ps-box solution">
+        <div class="ps-label ok">&#10003; THE SOLUTION</div>
+        <p id="opSolution"></p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ============ TREK GALLERY MODAL ============ -->
+<div class="overlay" id="trekModal" hidden>
+  <div class="dialog trek-dialog" role="dialog" aria-modal="true">
+    <button class="close-btn warm" data-close aria-label="Close">&#10005;</button>
+    <div class="modal-kicker warn">OFF_GRID // <span id="tkLocation"></span></div>
+    <h3 id="tkName"></h3>
+    <p class="trek-desc" id="tkDesc"></p>
+    <div class="photo-grid" id="tkPhotos"></div>
+  </div>
+</div>
+
+<!-- ============ LIGHTBOX ============ -->
+<div class="lightbox" id="lightbox" hidden>
+  <button class="lb-btn lb-close" data-close aria-label="Close">&#10005;</button>
+  <button class="lb-btn lb-prev" id="lbPrev" aria-label="Previous photo">&#8249;</button>
+  <button class="lb-btn lb-next" id="lbNext" aria-label="Next photo">&#8250;</button>
+  <div class="lb-stage">
+    <img id="lbImg" src="" alt="Trek photo">
+    <div class="lb-count" id="lbCount"></div>
+  </div>
+</div>
+
+<!-- ============ COMMAND PALETTE ============ -->
+<div class="overlay top" id="cmdModal" hidden>
+  <div class="palette corners2" role="dialog" aria-modal="true">
+    <div class="palette-head">
+      <span class="accent mono">&gt;_</span>
+      <input id="cmdInput" type="text" placeholder="type a command... (go projects, copy email)" autocomplete="off">
+      <span class="kbd">ESC</span>
+    </div>
+    <div class="palette-list" id="cmdResults"></div>
+  </div>
+</div>
+
+<!-- ============ BOOT SEQUENCE ============ -->
+<div class="boot" id="boot" hidden>
+  <div class="boot-panel">
+    <div class="boot-head"><span>DOSHI.OS // BOOT_SEQUENCE</span><span>v2.6.0</span></div>
+    <div class="boot-lines" id="bootLines"></div>
+    <div class="boot-bar"><div id="bootFill"></div></div>
+    <div class="boot-foot"><span id="bootPct">0%</span><span>CLICK TO SKIP</span></div>
+  </div>
+</div>
+
+<noscript><div style="position:fixed;inset:0;z-index:2000;background:#04060C;color:#E8F4FF;display:flex;align-items:center;justify-content:center;font-family:monospace;padding:24px;text-align:center">This portfolio needs JavaScript enabled. Contact: doshidev58@gmail.com</div></noscript>
+
+<script src="js/main.js"></script>
+</body>
+</html>
