@@ -651,10 +651,11 @@
   }
 
   /* ---------- contact form ----------
-     Delivered to doshidev58@gmail.com via FormSubmit.co (free relay,
-     no backend needed). The very first submission emails an activation
-     link to that address — click it once and the form is live. */
-  var FORM_ENDPOINT = 'https://formsubmit.co/ajax/doshidev58@gmail.com';
+     Delivered to doshidev58@gmail.com via Web3Forms (free relay, no
+     backend needed). The access key below is public by design — it only
+     identifies which inbox receives the form. */
+  var FORM_ENDPOINT = 'https://api.web3forms.com/submit';
+  var FORM_ACCESS_KEY = '262131d0-0410-477a-ac40-3ca0211e03ba';
 
   function setupForm() {
     var btn = $('#fSubmit');
@@ -698,21 +699,19 @@
         method: 'POST',
         headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
         body: JSON.stringify({
-          Name: name,
-          Email: email,
-          Message: msg,
-          _subject: 'New portfolio inquiry — ' + name,
-          _template: 'table',
-          _replyto: email,
-          _captcha: 'false'
+          access_key: FORM_ACCESS_KEY,
+          subject: 'New portfolio inquiry — ' + name,
+          from_name: 'Dev Doshi Portfolio',
+          name: name,
+          email: email,
+          message: msg
         })
       }).then(function (r) {
         if (!r.ok) throw new Error('relay error ' + r.status);
         return r.json();
       }).then(function (data) {
-        // FormSubmit can answer 200 while reporting failure in the body
-        // (e.g. form pending activation) — only celebrate a real success.
-        if (!(data && (data.success === true || data.success === 'true'))) {
+        // only celebrate when the relay confirms delivery
+        if (!(data && data.success === true)) {
           throw new Error(data && data.message ? data.message : 'relay reported failure');
         }
         showSent();
