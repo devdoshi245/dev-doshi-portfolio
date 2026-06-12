@@ -232,6 +232,9 @@
             <input id="fName" type="text" placeholder="your name" autocomplete="name">
             <input id="fEmail" type="email" placeholder="your email" autocomplete="email">
             <textarea id="fMsg" rows="5" placeholder="what would you like to automate?"></textarea>
+            <!-- honeypot: invisible to humans, bots fill it and get dropped -->
+            <input id="fHoney" type="text" tabindex="-1" autocomplete="off" aria-hidden="true" style="position:absolute;left:-9999px;width:1px;height:1px;opacity:0">
+            <div class="form-err" id="formErr" hidden></div>
             <button class="btn btn-primary" id="fSubmit">TRANSMIT &#8594;</button>
           </div>
         </div>

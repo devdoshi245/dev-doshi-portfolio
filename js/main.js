@@ -650,16 +650,71 @@
     });
   }
 
-  /* ---------- contact form ---------- */
+  /* ---------- contact form ----------
+     Delivered to doshidev58@gmail.com via FormSubmit.co (free relay,
+     no backend needed). The very first submission emails an activation
+     link to that address — click it once and the form is live. */
+  var FORM_ENDPOINT = 'https://formsubmit.co/ajax/doshidev58@gmail.com';
+
   function setupForm() {
-    $('#fSubmit').addEventListener('click', function () {
+    var btn = $('#fSubmit');
+    var fields = [$('#fName'), $('#fEmail'), $('#fMsg')];
+    var err = $('#formErr');
+
+    function showSent() {
       $('#formIdle').hidden = true;
       $('#formSent').hidden = false;
+      btn.disabled = false;
+      btn.innerHTML = 'TRANSMIT →';
       setTimeout(function () {
-        $('#fName').value = ''; $('#fEmail').value = ''; $('#fMsg').value = '';
+        fields.forEach(function (el) { el.value = ''; });
         $('#formSent').hidden = true;
         $('#formIdle').hidden = false;
       }, 4500);
+    }
+
+    btn.addEventListener('click', function () {
+      fields.forEach(function (el) { el.classList.remove('field-error'); });
+      err.hidden = true;
+
+      var name = $('#fName').value.trim();
+      var email = $('#fEmail').value.trim();
+      var msg = $('#fMsg').value.trim();
+      var bad = [];
+      if (!name) bad.push($('#fName'));
+      if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) bad.push($('#fEmail'));
+      if (!msg) bad.push($('#fMsg'));
+      if (bad.length) {
+        bad.forEach(function (el) { el.classList.add('field-error'); });
+        err.textContent = '> ERROR: please fill every field (with a valid email).';
+        err.hidden = false;
+        return;
+      }
+      if ($('#fHoney').value) { showSent(); return; } // bot trap: pretend success, send nothing
+
+      btn.disabled = true;
+      btn.textContent = 'TRANSMITTING...';
+      fetch(FORM_ENDPOINT, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
+        body: JSON.stringify({
+          Name: name,
+          Email: email,
+          Message: msg,
+          _subject: 'New portfolio inquiry — ' + name,
+          _template: 'table',
+          _replyto: email,
+          _captcha: 'false'
+        })
+      }).then(function (r) {
+        if (!r.ok) throw new Error('relay error ' + r.status);
+        return r.json();
+      }).then(showSent).catch(function () {
+        btn.disabled = false;
+        btn.innerHTML = 'TRANSMIT →';
+        err.textContent = '> TRANSMISSION FAILED — please email me directly: doshidev58@gmail.com';
+        err.hidden = false;
+      });
     });
   }
 
