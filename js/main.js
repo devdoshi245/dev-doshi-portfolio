@@ -5,8 +5,10 @@
   'use strict';
 
   /* ============================================================
-     REPLACE WITH YOUR TREK PHOTOS — 6 image URLs per trek,
-     photos[0] doubles as the card cover.
+     REPLACE WITH YOUR TREK PHOTOS — image URLs per trek.
+     `cover` is the card image; if omitted, photos[0] is used.
+     Buran Ghati uses real photos from assets/treks/buran-ghati/
+     (see the README there for the expected filenames).
      ============================================================ */
   var TREKS = [
     {
@@ -25,7 +27,17 @@
       id: 'buran', name: 'Buran Ghati', location: 'Himachal Pradesh', alt: '15,000 FT',
       vibe: 'An ice-wall rappel and meadows that go on forever.',
       desc: 'One of Himachal’s most thrilling passes at 15,000 ft — the endless Dayara meadows, the frozen Chandranahan lakes, and a heart-pounding rappel down the ice wall on the far side.',
-      photos: ['https://picsum.photos/id/1018/1200/800', 'https://picsum.photos/id/1044/1200/800', 'https://picsum.photos/id/1022/1200/800', 'https://picsum.photos/id/17/1200/800', 'https://picsum.photos/id/11/1200/800', 'https://picsum.photos/id/12/1200/800']
+      cover: 'https://picsum.photos/id/1018/1200/800',
+      photos: [
+        'assets/treks/buran-ghati/01-camp-dog-meadow.jpg',
+        'assets/treks/buran-ghati/02-pass-summit-snow.jpg',
+        'assets/treks/buran-ghati/03-snow-peaks-panorama.jpg',
+        'assets/treks/buran-ghati/04-base-camp-boulder.jpg',
+        'assets/treks/buran-ghati/05-frozen-lake-balance.jpg',
+        'assets/treks/buran-ghati/06-frozen-lake-arms-wide.jpg',
+        'assets/treks/buran-ghati/07-camp-under-wall.jpg',
+        'assets/treks/buran-ghati/08-forest-peak-view.jpg'
+      ]
     }
   ];
 
@@ -340,7 +352,7 @@
   function renderTreks() {
     $('#trekGrid').innerHTML = TREKS.map(function (tk, i) {
       return '<div class="trek-card" data-trek="' + i + '" data-reveal tabindex="0" role="button">' +
-        '<div class="trek-cover"><img src="' + esc(tk.photos[0]) + '" alt="' + esc(tk.name) + '" loading="lazy"></div>' +
+        '<div class="trek-cover"><img src="' + esc(tk.cover || tk.photos[0]) + '" alt="' + esc(tk.name) + '" loading="lazy"></div>' +
         '<div class="trek-body"><div class="trek-head"><h3>' + esc(tk.name) + '</h3><span class="trek-alt">' + esc(tk.alt) + '</span></div>' +
         '<div class="trek-loc">&#9906; ' + esc(tk.location) + '</div>' +
         '<p class="trek-vibe">' + esc(tk.vibe) + '</p>' +
