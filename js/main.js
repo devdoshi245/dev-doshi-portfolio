@@ -167,7 +167,7 @@
   function toggleTheme() { applyTheme(state.theme === 'dark' ? 'light' : 'dark'); }
 
   /* ---------- navigation ---------- */
-  var PAGES = [['home', 'HOME', '01'], ['projects', 'PROJECTS', '02'], ['about', 'ABOUT', '03'], ['treks', 'TREKS', '04'], ['contact', 'CONTACT', '05']];
+  var PAGES = [['home', 'HOME', '01'], ['projects', 'PROJECTS', '02'], ['about', 'ABOUT', '03'], ['treks', 'PASSION', '04'], ['contact', 'CONTACT', '05']];
 
   function renderNav() {
     $('#navLinks').innerHTML = PAGES.map(function (p) {
