@@ -269,7 +269,7 @@ main { flex: 1; }
 html[data-theme="light"] .btn-ghost { background: rgba(255, 255, 255, 0.5); }
 .btn-ghost:hover { transform: translateY(-2px); border-color: var(--accent); color: var(--accent); }
 a.btn { display: inline-flex; align-items: center; justify-content: center; text-decoration: none; box-sizing: border-box; }
-.btn-resume { min-width: 252px; white-space: nowrap; font-variant-ligatures: none; }
+.btn-resume { white-space: nowrap; font-variant-ligatures: none; }
 .btn-resume.done { border-color: var(--success); color: var(--success); }
 
 /* workflow pipeline */

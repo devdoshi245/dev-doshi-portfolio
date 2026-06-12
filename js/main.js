@@ -745,25 +745,27 @@
       e.preventDefault();
       if (busy) return;
       busy = true;
+      btn.style.minWidth = btn.offsetWidth + 'px'; // keep size steady while frames swap
       var steps = [
-        ['> ESTABLISHING LINK', 260],
-        ['> ESTABLISHING LINK .', 200],
-        ['> ESTABLISHING LINK ..', 200],
-        ['> DECRYPTING RESUME.PDF', 340]
+        ['> LINKING', 240],
+        ['> LINKING .', 200],
+        ['> LINKING ..', 200],
+        ['> DECRYPTING', 320]
       ];
-      var BARS = 10, p = 0, si = 0;
+      var BARS = 8, p = 0, si = 0;
       function bar() {
         p++;
         var blocks = '';
         for (var i = 0; i < BARS; i++) blocks += i < p ? '█' : '░';
-        btn.textContent = '▼ ' + blocks + ' ' + (p * 10) + '%';
-        if (p < BARS) { setTimeout(bar, 70); return; }
+        btn.textContent = '▼ ' + blocks + ' ' + Math.round(p * 100 / BARS) + '%';
+        if (p < BARS) { setTimeout(bar, 80); return; }
         downloadResumeFile();
         btn.classList.add('done');
-        btn.textContent = 'TRANSFER COMPLETE ✓';
+        btn.textContent = 'COMPLETE ✓';
         setTimeout(function () {
           btn.classList.remove('done');
           btn.innerHTML = idle;
+          btn.style.minWidth = '';
           busy = false;
         }, 2200);
       }
