@@ -15,13 +15,33 @@
       id: 'hampta', name: 'Hampta Pass', location: 'Himachal Pradesh', alt: '14,100 FT',
       vibe: 'From lush Kullu greens to the stark moonscape of Lahaul — two worlds in one crossing.',
       desc: 'A dramatic valley-crossover trek at 14,100 ft. Green meadows and river crossings on the Kullu side, then over the pass into the barren, beautiful high desert of Lahaul & Spiti.',
-      photos: ['https://picsum.photos/id/1036/1200/800', 'https://picsum.photos/id/1015/1200/800', 'https://picsum.photos/id/1016/1200/800', 'https://picsum.photos/id/29/1200/800', 'https://picsum.photos/id/1043/1200/800', 'https://picsum.photos/id/1039/1200/800']
+      cover: 'https://picsum.photos/id/1036/1200/800',
+      photos: [
+        'assets/treks/hampta-pass/01.jpg',
+        'assets/treks/hampta-pass/02.jpg',
+        'assets/treks/hampta-pass/03.jpg',
+        'assets/treks/hampta-pass/04.jpg',
+        'assets/treks/hampta-pass/05.jpg',
+        'assets/treks/hampta-pass/06.jpg',
+        'assets/treks/hampta-pass/07.jpg',
+        'assets/treks/hampta-pass/08.jpg'
+      ]
     },
     {
       id: 'sarpass', name: 'Sar Pass, Kasol', location: 'Parvati Valley, Himachal Pradesh', alt: '13,800 FT',
       vibe: 'Pine forests, snowfields, and the Parvati Valley spread out far below.',
       desc: 'A classic Parvati Valley trek to 13,800 ft — through Grahan village and dense pine forest, across alpine meadows, ending with the legendary snow-slide descent to Biskeri Thach.',
-      photos: ['https://picsum.photos/id/1021/1200/800', 'https://picsum.photos/id/1011/1200/800', 'https://picsum.photos/id/1002/1200/800', 'https://picsum.photos/id/1019/1200/800', 'https://picsum.photos/id/28/1200/800', 'https://picsum.photos/id/10/1200/800']
+      cover: 'https://picsum.photos/id/1021/1200/800',
+      photos: [
+        'assets/treks/sar-pass-kasol/01.jpg',
+        'assets/treks/sar-pass-kasol/02.jpg',
+        'assets/treks/sar-pass-kasol/03.jpg',
+        'assets/treks/sar-pass-kasol/04.jpg',
+        'assets/treks/sar-pass-kasol/05.jpg',
+        'assets/treks/sar-pass-kasol/06.jpg',
+        'assets/treks/sar-pass-kasol/07.jpg',
+        'assets/treks/sar-pass-kasol/08.jpg'
+      ]
     },
     {
       id: 'buran', name: 'Buran Ghati', location: 'Himachal Pradesh', alt: '15,000 FT',
