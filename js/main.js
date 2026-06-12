@@ -489,6 +489,7 @@
       { label: 'copy: email — doshidev58@gmail.com', hint: 'ACTION', action: function () { copyContact('email', null); closeCmd(); } },
       { label: 'copy: phone — +91 96382 22009', hint: 'ACTION', action: function () { copyContact('phone', null); closeCmd(); } },
       { label: 'open: linkedin profile', hint: 'LINK', action: function () { window.open('https://www.linkedin.com/in/dev-doshi-1ba604247/', '_blank'); closeCmd(); } },
+      { label: 'download: resume.pdf', hint: 'FILE', action: function () { closeCmd(); downloadResumeFile(); } },
       { label: 'filter: sales & outreach systems', hint: 'FILTER', action: function () { state.filter = 'Sales & Outreach'; renderChips(); renderProjects(); go('projects'); } },
       { label: 'filter: content & marketing systems', hint: 'FILTER', action: function () { state.filter = 'Content & Marketing'; renderChips(); renderProjects(); go('projects'); } },
       { label: 'replay: boot sequence', hint: 'SYS', action: function () { try { sessionStorage.removeItem('doshi-booted'); } catch (e) {} closeCmd(); runBoot(); } }
@@ -724,6 +725,59 @@
     });
   }
 
+  /* ---------- resume download ---------- */
+  var RESUME_PATH = 'assets/Dev-Doshi-Resume.pdf';
+
+  function downloadResumeFile() {
+    var a = document.createElement('a');
+    a.href = RESUME_PATH;
+    a.download = 'Dev-Doshi-Resume.pdf';
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+  }
+
+  function setupResume() {
+    var btn = $('#resumeBtn');
+    var idle = btn.innerHTML;
+    var busy = false;
+    btn.addEventListener('click', function (e) {
+      e.preventDefault();
+      if (busy) return;
+      busy = true;
+      var steps = [
+        ['> ESTABLISHING LINK', 260],
+        ['> ESTABLISHING LINK .', 200],
+        ['> ESTABLISHING LINK ..', 200],
+        ['> DECRYPTING RESUME.PDF', 340]
+      ];
+      var BARS = 10, p = 0, si = 0;
+      function bar() {
+        p++;
+        var blocks = '';
+        for (var i = 0; i < BARS; i++) blocks += i < p ? '█' : '░';
+        btn.textContent = '▼ ' + blocks + ' ' + (p * 10) + '%';
+        if (p < BARS) { setTimeout(bar, 70); return; }
+        downloadResumeFile();
+        btn.classList.add('done');
+        btn.textContent = 'TRANSFER COMPLETE ✓';
+        setTimeout(function () {
+          btn.classList.remove('done');
+          btn.innerHTML = idle;
+          busy = false;
+        }, 2200);
+      }
+      function step() {
+        if (si < steps.length) {
+          btn.textContent = steps[si][0];
+          setTimeout(step, steps[si][1]);
+          si++;
+        } else bar();
+      }
+      step();
+    });
+  }
+
   /* ---------- global events ---------- */
   function setupEvents() {
     // delegated clicks
@@ -834,6 +888,7 @@
     renderContacts();
     setupEvents();
     setupForm();
+    setupResume();
     setupField();
     setupCursor();
     setupTilt();

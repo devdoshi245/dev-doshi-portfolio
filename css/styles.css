@@ -268,6 +268,9 @@ main { flex: 1; }
 .btn-ghost { border: 1px solid var(--border); background: rgba(9, 15, 29, 0.5); color: var(--text); }
 html[data-theme="light"] .btn-ghost { background: rgba(255, 255, 255, 0.5); }
 .btn-ghost:hover { transform: translateY(-2px); border-color: var(--accent); color: var(--accent); }
+a.btn { display: inline-flex; align-items: center; justify-content: center; text-decoration: none; box-sizing: border-box; }
+.btn-resume { min-width: 252px; white-space: nowrap; font-variant-ligatures: none; }
+.btn-resume.done { border-color: var(--success); color: var(--success); }
 
 /* workflow pipeline */
 .pipeline { display: flex; align-items: center; flex-wrap: wrap; row-gap: 12px; margin-top: 44px; }
