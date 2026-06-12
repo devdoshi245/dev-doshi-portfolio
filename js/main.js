@@ -709,7 +709,14 @@
       }).then(function (r) {
         if (!r.ok) throw new Error('relay error ' + r.status);
         return r.json();
-      }).then(showSent).catch(function () {
+      }).then(function (data) {
+        // FormSubmit can answer 200 while reporting failure in the body
+        // (e.g. form pending activation) — only celebrate a real success.
+        if (!(data && (data.success === true || data.success === 'true'))) {
+          throw new Error(data && data.message ? data.message : 'relay reported failure');
+        }
+        showSent();
+      }).catch(function () {
         btn.disabled = false;
         btn.innerHTML = 'TRANSMIT →';
         err.textContent = '> TRANSMISSION FAILED — please email me directly: doshidev58@gmail.com';
