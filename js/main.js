@@ -153,6 +153,8 @@
   };
   var sysNum = function (i) { return 'SYS-' + String(i + 1).padStart(2, '0'); };
   var fieldColors = FIELD_COLORS.dark;
+  var AMBIENT = { line: '#FFB454', dot: '#FFC773' }; // warm hue for visual-only ambient mode (#5)
+  var ambientOn = false;
   var mouse = { x: -9999, y: -9999 };
 
   /* ---------- 3D capability gate ----------
@@ -740,6 +742,9 @@
       var W = c.width, H = c.height;
       ctx.clearRect(0, 0, W, H);
       var m = mouse;
+      var lineCol = ambientOn ? AMBIENT.line : fieldColors.line;
+      var dotCol = ambientOn ? AMBIENT.dot : fieldColors.dot;
+      var dotA = ambientOn ? 0.7 : 0.45, lineBoost = ambientOn ? 1.6 : 1;
       pts.forEach(function (p) {
         p.x += p.vx; p.y += p.vy;
         if (p.x < 0 || p.x > W) p.vx *= -1;
@@ -754,22 +759,22 @@
           var dx = pts[i].x - pts[j].x, dy = pts[i].y - pts[j].y;
           var d = Math.sqrt(dx * dx + dy * dy);
           if (d < DIST) {
-            ctx.globalAlpha = (1 - d / DIST) * 0.14;
-            ctx.strokeStyle = fieldColors.line;
+            ctx.globalAlpha = (1 - d / DIST) * 0.14 * lineBoost;
+            ctx.strokeStyle = lineCol;
             ctx.beginPath(); ctx.moveTo(pts[i].x, pts[i].y); ctx.lineTo(pts[j].x, pts[j].y); ctx.stroke();
           }
         }
         var mdx = m.x - pts[i].x, mdy = m.y - pts[i].y;
         var mdd = Math.sqrt(mdx * mdx + mdy * mdy);
         if (mdd < MDIST) {
-          ctx.globalAlpha = (1 - mdd / MDIST) * 0.3;
-          ctx.strokeStyle = fieldColors.line;
+          ctx.globalAlpha = (1 - mdd / MDIST) * 0.3 * lineBoost;
+          ctx.strokeStyle = lineCol;
           ctx.beginPath(); ctx.moveTo(pts[i].x, pts[i].y); ctx.lineTo(m.x, m.y); ctx.stroke();
         }
       }
-      ctx.fillStyle = fieldColors.dot;
+      ctx.fillStyle = dotCol;
       pts.forEach(function (p) {
-        ctx.globalAlpha = 0.45;
+        ctx.globalAlpha = dotA;
         ctx.beginPath(); ctx.arc(p.x, p.y, 1.4, 0, Math.PI * 2); ctx.fill();
       });
       ctx.globalAlpha = 1;
@@ -817,10 +822,14 @@
     var camX = 0, camY = 0, camZ = 720;
     field3D.scrollZoom = 0;   // set by onScrollFx: scroll down -> camera into the field
     field3D.swirlV = 0;       // burst on section change, decays
-    field3D.audio = 0;        // ambient-sound beat level
+    field3D.ambient = false;  // visual-only ambient mode: warmer + brighter (no audio)
+    field3D.aLevel = 0;
     field3D.swirl = function () { field3D.swirlV = 0.06; };
+    var baseCol = new THREE.Color(), warmCol = new THREE.Color(AMBIENT.dot);
     function draw() {
-      var drift = 0.6 + field3D.audio * 1.1;
+      field3D.aLevel += ((field3D.ambient ? 1 : 0) - field3D.aLevel) * 0.05; // ease ambient
+      var aL = field3D.aLevel;
+      var drift = 0.6 + aL * 0.5;
       var arr = geo.attributes.position.array;
       for (var i = 0; i < COUNT; i++) {
         arr[i * 3 + 2] += drift;                                // slow z-drift toward camera
@@ -830,7 +839,10 @@
       points.rotation.y += 0.0004;
       points.rotation.z += field3D.swirlV;                      // vortex on section change
       field3D.swirlV *= 0.92;
-      mat.size = 3 + field3D.audio * 2.6;                       // pulse with the beat
+      mat.size = 3 + aL * 2.2;                                  // larger/brighter in ambient mode
+      mat.opacity = 0.85 + aL * 0.12;
+      baseCol.set(fieldColors.dot);
+      mat.color.copy(baseCol).lerp(warmCol, aL);                // shift toward a warmer hue
       var tx = (mouse.x < 0 ? window.innerWidth / 2 : mouse.x) / window.innerWidth - 0.5;
       var ty = (mouse.y < 0 ? window.innerHeight / 2 : mouse.y) / window.innerHeight - 0.5;
       camX += (tx * 130 - camX) * 0.04;
@@ -1325,6 +1337,21 @@
     } catch (e) { lenis = null; }
   }
 
+  /* ---------- ambient visual mode (#5) — NO audio; warms the particle field ---------- */
+  function setupAmbient() {
+    var btn = $('#ambientToggle'); if (!btn) return;
+    function apply(on) {
+      ambientOn = on;
+      document.body.classList.toggle('ambient', on);
+      btn.classList.toggle('on', on);
+      if (field3D) field3D.ambient = on;
+      try { localStorage.setItem('doshi-ambient', on ? 'on' : 'off'); } catch (e) {}
+    }
+    btn.addEventListener('click', function () { apply(!ambientOn); });
+    var saved = false; try { saved = localStorage.getItem('doshi-ambient') === 'on'; } catch (e) {}
+    if (saved) apply(true);
+  }
+
   /* ---------- GitHub live data (#6) — fail silently to fallbacks ---------- */
   var OPS_FALLBACK = [
     { tag: 'PUSH', text: '→ dev-doshi-portfolio / main (2 commits)', color: 'var(--accent)' },
@@ -1419,6 +1446,7 @@
       setupPanelTilt();
       setupLenis();
     }
+    setupAmbient();                     // ambient visual-mode toggle (#5, no audio)
     ghFetch();                          // live ops feed (#6)
     setInterval(ghFetch, 60000);
 
