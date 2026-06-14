@@ -200,19 +200,25 @@
     }).join('');
   }
 
-  var flipTimers = [];
-  function clearFlipTimers() { flipTimers.forEach(clearTimeout); flipTimers = []; }
+  var navTimers = [];
+  function clearNavTimers() { navTimers.forEach(clearTimeout); navTimers = []; }
+
+  // brief top-to-bottom cyan "screen refresh" sweep — desktop only
+  function triggerScan() {
+    if (document.body.classList.contains('mobile') || prefersReduced) return;
+    var s = $('#scanSweep'); if (!s) return;
+    s.classList.remove('sweep'); void s.offsetWidth; s.classList.add('sweep');
+    navTimers.push(setTimeout(function () { s.classList.remove('sweep'); }, 240));
+  }
 
   function showPageInstant(page) {
     $$('.page').forEach(function (el) {
       var on = el.getAttribute('data-page') === page;
-      el.classList.remove('active', 'flip-out', 'flip-in');
-      if (on) {
-        void el.offsetWidth; // retrigger the pageIn animation
-        el.classList.add('active');
-      }
+      el.classList.remove('active', 'exit', 'enter');
+      if (on) { void el.offsetWidth; el.classList.add('active', 'enter'); }
     });
     toTop(); resetScrollFx();
+    navTimers.push(setTimeout(function () { var a = document.querySelector('.page.active'); if (a) a.classList.remove('enter'); }, 420));
     requestAnimationFrame(function () { scanReveals(); revealInView(); refreshLiftEls(); });
   }
 
@@ -227,22 +233,25 @@
     if (field3D && field3D.swirl) field3D.swirl(); // particles vortex + resettle on section change (#2)
     if (samePage) { toTop(); return; }
 
-    clearFlipTimers();
-    if (!ENABLE_3D || !document.body.classList.contains('fx-3d') || !cur || cur === next) {
-      // phones / reduced-motion / first paint: instant switch (original behavior)
+    clearNavTimers();
+    if (prefersReduced || !cur || cur === next) {
+      // reduced-motion / first paint: instant switch
       showPageInstant(page);
       return;
     }
-    // 3D flip: current page rotates away, incoming page flips in
-    cur.classList.remove('flip-in');
-    cur.classList.add('flip-out');
-    flipTimers.push(setTimeout(function () {
-      cur.classList.remove('active', 'flip-out');
+    // holographic view transition (all devices): outgoing fades/scales/slides up,
+    // a cyan scan-line sweeps (desktop), incoming fades/scales/slides into place.
+    $$('.page').forEach(function (p) { if (p !== cur) p.classList.remove('exit', 'enter'); });
+    cur.classList.remove('enter');
+    cur.classList.add('exit');                        // 280ms ease-in (opacity 0 by ~65%)
+    navTimers.push(setTimeout(function () {
+      triggerScan();                                  // sweep across the swap
+      cur.classList.remove('active', 'exit');
       toTop(); resetScrollFx();
-      next.classList.add('active', 'flip-in');
+      next.classList.add('active', 'enter');          // 380ms ease-out
       requestAnimationFrame(function () { scanReveals(); revealInView(); refreshLiftEls(); });
-      flipTimers.push(setTimeout(function () { next.classList.remove('flip-in'); }, 440));
-    }, 250));
+      navTimers.push(setTimeout(function () { next.classList.remove('enter'); }, 420));
+    }, 200));
   }
 
   function openMenu() {

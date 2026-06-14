@@ -218,7 +218,34 @@ main { flex: 1; }
 
 /* ---------- pages ---------- */
 .page { display: none; }
-.page.active { display: block; animation: pageIn 0.5s cubic-bezier(0.22, 0.61, 0.36, 1); }
+.page.active { display: block; }
+
+/* holographic view transition — fade + scale + slide (all devices).
+   The cyan scan-line sweep is triggered via JS on desktop only. */
+.page.exit { animation: viewExit 0.28s ease-in forwards; }
+.page.active.enter { animation: viewEnter 0.38s ease-out both; }
+@keyframes viewExit {
+  0% { opacity: 1; transform: translateY(0) scale(1); }
+  65% { opacity: 0; }
+  100% { opacity: 0; transform: translateY(-20px) scale(0.96); }
+}
+@keyframes viewEnter {
+  0% { opacity: 0; transform: translateY(-20px) scale(0.96); }
+  100% { opacity: 1; transform: translateY(0) scale(1); }
+}
+#scanSweep {
+  position: fixed; left: 0; right: 0; top: 0; height: 3px; z-index: 9000;
+  pointer-events: none; opacity: 0;
+  background: linear-gradient(90deg, transparent, var(--accent) 18%, #FFFFFF 50%, var(--accent) 82%, transparent);
+  box-shadow: 0 0 18px var(--accent), 0 0 44px var(--accent);
+}
+#scanSweep.sweep { animation: scanSweep 0.18s linear; }
+@keyframes scanSweep {
+  0% { opacity: 0; transform: translateY(0); }
+  12% { opacity: 1; }
+  88% { opacity: 1; }
+  100% { opacity: 0; transform: translateY(100vh); }
+}
 .section { padding-bottom: 64px; }
 .section-last { padding-bottom: 88px; }
 .page-pad { padding-top: 64px; padding-bottom: 88px; }
@@ -622,6 +649,7 @@ footer { border-top: 1px solid var(--border); }
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .hero-name, .marquee-track, .ring, .scanbeam, .ppulse { animation: none !important; }
+  .hero-name, .marquee-track, .ring, .scanbeam, .ppulse,
+  .page.exit, .page.active.enter, #scanSweep { animation: none !important; }
   [data-reveal] { transition: none; }
 }

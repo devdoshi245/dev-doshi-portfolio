@@ -46,20 +46,6 @@ html[data-theme="light"] .fx-3d .proj-card::after {
   transition: transform .2s ease, box-shadow .2s ease, border-color .25s ease;
 }
 
-/* ---------- section 3D flip (#4) ---------- */
-.fx-3d main { perspective: 1600px; }
-.fx-3d .page { transform-origin: 50% 45%; backface-visibility: hidden; }
-.fx-3d .page.flip-out { animation: pageFlipOut .25s cubic-bezier(.55, 0, .78, .2) forwards; }
-.fx-3d .page.active.flip-in { animation: pageFlipIn .44s cubic-bezier(.22, .61, .36, 1) both; }
-@keyframes pageFlipOut {
-  from { opacity: 1; transform: rotateY(0deg) scale(1); }
-  to   { opacity: 0; transform: rotateY(-90deg) scale(.85); }
-}
-@keyframes pageFlipIn {
-  from { opacity: 0; transform: rotateY(90deg) scale(.85); }
-  to   { opacity: 1; transform: rotateY(0deg) scale(1); }
-}
-
 /* ---------- tech sphere (#5) ---------- */
 #tagSphereWrap { padding-top: 4px; padding-bottom: 30px; }
 #tagSphereWrap[hidden] { display: none; }
@@ -86,6 +72,5 @@ html[data-theme="light"] .fx-3d .proj-card::after {
 
 /* ---------- safety: never animate under reduced motion ---------- */
 @media (prefers-reduced-motion: reduce) {
-  .fx-3d .page.flip-out, .fx-3d .page.active.flip-in { animation: none !important; }
   #cursorGlow { display: none; }
 }

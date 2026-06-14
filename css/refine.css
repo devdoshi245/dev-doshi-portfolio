@@ -76,14 +76,12 @@ body.mobile .liveops-grid { transform: perspective(1000px) rotateX(2deg) !import
 /* hero text gently floats */
 body.mobile .hero-text { animation: heroFloat 4s ease-in-out infinite alternate !important; }
 @keyframes heroFloat { from { transform: translateY(-6px); } to { transform: translateY(6px); } }
-/* fade + scale on section change */
-body.mobile .page.active { animation: mobilePageIn .5s ease !important; }
-@keyframes mobilePageIn { from { opacity: 0; transform: scale(.97); } to { opacity: 1; transform: none; } }
+/* (section transition is now the shared holographic fade+scale+slide in styles.css) */
 
 /* ---------- reduced motion — keep glass + a static tilt, drop continuous motion ---------- */
 @media (prefers-reduced-motion: reduce) {
   body.mobile .proj-card { animation: none !important; transform: perspective(800px) rotateY(-3deg) !important; }
-  body.mobile .hero-text, body.mobile .page.active,
+  body.mobile .hero-text,
   .fx-3d .streaming .pulse-dot::before, .fx-3d .streaming .pulse-dot::after,
   .fx-3d .proj-card:hover::before, .fx-3d .proj-card:hover .sys-num { animation: none !important; }
 }
