@@ -58,20 +58,32 @@ html[data-theme="light"] .fx-3d .stat-value { text-shadow: 2px 2px 0 rgba(0, 144
 .fx-3d .streaming .pulse-dot::after { animation-delay: 1s; }
 @keyframes ripple3d { 0% { opacity: .8; transform: scale(1); } 100% { opacity: 0; transform: scale(3.4); } }
 
-/* ---------- FIX 5 — lightweight mobile 3D (CSS-only, body.mobile) ---------- */
-body.mobile #projectGrid .proj-card { animation: cardRock 3s ease-in-out infinite alternate; transform-origin: center; }
-body.mobile #projectGrid .proj-card:nth-child(2n) { animation-delay: .6s; }
-body.mobile #projectGrid .proj-card:nth-child(3n) { animation-delay: 1.1s; }
+/* ---------- FIX 5 — lightweight mobile 3D (CSS-only, body.mobile) ----------
+   Independent of body.fx-3d. !important on the key props guarantees these
+   win over any base rule. Glassmorphism comes from the global block above;
+   here we strengthen the cyan border glow so the change is unmistakable. */
+body.mobile .proj-card {
+  animation: cardRock 3.4s ease-in-out infinite alternate !important;
+  transform-origin: center;
+  border-color: rgba(0, 255, 200, 0.30) !important;
+  box-shadow: 0 0 22px rgba(0, 229, 255, 0.12), inset 0 0 30px rgba(0, 229, 255, 0.05) !important;
+}
+body.mobile .proj-card:nth-child(2n) { animation-delay: .7s !important; }
+body.mobile .proj-card:nth-child(3n) { animation-delay: 1.2s !important; }
 @keyframes cardRock { from { transform: perspective(800px) rotateY(-4deg); } to { transform: perspective(800px) rotateY(4deg); } }
-body.mobile .liveops-grid { transform: perspective(1000px) rotateX(2deg); }
-body.mobile .hero-text { animation: heroFloat 4s ease-in-out infinite alternate; }
+/* live-ops console angled on the desk */
+body.mobile .liveops-grid { transform: perspective(1000px) rotateX(2deg) !important; }
+/* hero text gently floats */
+body.mobile .hero-text { animation: heroFloat 4s ease-in-out infinite alternate !important; }
 @keyframes heroFloat { from { transform: translateY(-6px); } to { transform: translateY(6px); } }
-body.mobile .page.active { animation: mobilePageIn .45s ease; }
-@keyframes mobilePageIn { from { opacity: 0; transform: scale(.98); } to { opacity: 1; transform: none; } }
+/* fade + scale on section change */
+body.mobile .page.active { animation: mobilePageIn .5s ease !important; }
+@keyframes mobilePageIn { from { opacity: 0; transform: scale(.97); } to { opacity: 1; transform: none; } }
 
-/* ---------- reduced motion ---------- */
+/* ---------- reduced motion — keep glass + a static tilt, drop continuous motion ---------- */
 @media (prefers-reduced-motion: reduce) {
-  body.mobile #projectGrid .proj-card, body.mobile .hero-text, body.mobile .page.active,
+  body.mobile .proj-card { animation: none !important; transform: perspective(800px) rotateY(-3deg) !important; }
+  body.mobile .hero-text, body.mobile .page.active,
   .fx-3d .streaming .pulse-dot::before, .fx-3d .streaming .pulse-dot::after,
   .fx-3d .proj-card:hover::before, .fx-3d .proj-card:hover .sys-num { animation: none !important; }
 }

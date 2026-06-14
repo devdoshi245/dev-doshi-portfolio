@@ -166,7 +166,6 @@
     ((navigator.hardwareConcurrency || 8) >= 4);
   var field3D = null;
   var lenis = null;       // Lenis smooth-scroll instance (#10)
-  var audioPulse = 0;     // 0..1 ambient-sound beat level (#5), drives particles + icon
   var GH_USER = 'devdoshi245';
   var ghLines = null;     // live GitHub log lines, or null -> fall back to LOG_EVENTS
 
@@ -1326,73 +1325,6 @@
     } catch (e) { lenis = null; }
   }
 
-  /* ---------- ambient soundscape (#5) — Web Audio only, opt-in ---------- */
-  function setupSound() {
-    var btn = $('#soundToggle'); if (!btn) return;
-    btn.hidden = false;
-    var ctx = null, master = null, on = false, BEAT = 0.85;
-    function impulse(d, decay) {
-      var rate = ctx.sampleRate, len = Math.floor(rate * d), buf = ctx.createBuffer(2, len, rate);
-      for (var ch = 0; ch < 2; ch++) { var data = buf.getChannelData(ch); for (var i = 0; i < len; i++) data[i] = (Math.random() * 2 - 1) * Math.pow(1 - i / len, decay); }
-      return buf;
-    }
-    function build() {
-      var AC = window.AudioContext || window.webkitAudioContext; if (!AC) return false;
-      ctx = new AC();
-      master = ctx.createGain(); master.gain.value = 0; master.connect(ctx.destination);
-      var lp = ctx.createBiquadFilter(); lp.type = 'lowpass'; lp.frequency.value = 380; lp.Q.value = 0.7;
-      var trem = ctx.createGain(); trem.gain.value = 0.7;
-      lp.connect(trem); trem.connect(master);
-      var conv = ctx.createConvolver(); conv.buffer = impulse(2.4, 2.5);
-      var wet = ctx.createGain(); wet.gain.value = 0.5; trem.connect(conv); conv.connect(wet); wet.connect(master);
-      [55, 110, 164.81].forEach(function (f, idx) {
-        var o = ctx.createOscillator(); o.type = 'sine'; o.frequency.value = f;
-        var g = ctx.createGain(); g.gain.value = idx === 0 ? 0.5 : (idx === 1 ? 0.28 : 0.12);
-        o.connect(g); g.connect(lp); o.start();
-      });
-      var lfo = ctx.createOscillator(); lfo.type = 'sine'; lfo.frequency.value = BEAT;
-      var lfoGain = ctx.createGain(); lfoGain.gain.value = 0.35;
-      lfo.connect(lfoGain); lfoGain.connect(trem.gain); lfo.start();
-      return true;
-    }
-    function start() {
-      if (!ctx && !build()) return;
-      ctx.resume();
-      master.gain.cancelScheduledValues(ctx.currentTime);
-      master.gain.setValueAtTime(master.gain.value, ctx.currentTime);
-      master.gain.linearRampToValueAtTime(0.16, ctx.currentTime + 1.2);
-      on = true; btn.classList.add('on');
-      try { localStorage.setItem('doshi-sound', 'on'); } catch (e) {}
-    }
-    function stop() {
-      on = false; btn.classList.remove('on');
-      if (master && ctx) {
-        master.gain.cancelScheduledValues(ctx.currentTime);
-        master.gain.setValueAtTime(master.gain.value, ctx.currentTime);
-        master.gain.linearRampToValueAtTime(0, ctx.currentTime + 0.5);
-      }
-      audioPulse = 0; if (field3D) field3D.audio = 0;
-      try { localStorage.setItem('doshi-sound', 'off'); } catch (e) {}
-    }
-    btn.addEventListener('click', function () { on ? stop() : start(); });
-    (function vis() {
-      if (on) {
-        var t = ctx ? ctx.currentTime : performance.now() / 1000;
-        var v = (Math.sin(t * 2 * Math.PI * BEAT - Math.PI / 2) + 1) / 2;
-        audioPulse = v; if (field3D) field3D.audio = v * 0.9;
-        btn.style.setProperty('--lvl', v.toFixed(2));
-      }
-      requestAnimationFrame(vis);
-    })();
-    // honor saved preference but respect autoplay policy (resume on first gesture)
-    try {
-      if (localStorage.getItem('doshi-sound') === 'on') {
-        var once = function () { window.removeEventListener('pointerdown', once); start(); };
-        window.addEventListener('pointerdown', once, { once: true });
-      }
-    } catch (e) {}
-  }
-
   /* ---------- GitHub live data (#6) — fail silently to fallbacks ---------- */
   var OPS_FALLBACK = [
     { tag: 'PUSH', text: '→ dev-doshi-portfolio / main (2 commits)', color: 'var(--accent)' },
@@ -1487,7 +1419,6 @@
       setupPanelTilt();
       setupLenis();
     }
-    setupSound();
     ghFetch();                          // live ops feed (#6)
     setInterval(ghFetch, 60000);
 
