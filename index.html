@@ -26,6 +26,7 @@
 <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="css/styles.css">
 <link rel="stylesheet" href="css/fx3d.css">
+<link rel="stylesheet" href="css/phase3.css">
 </head>
 <body>
 
@@ -67,6 +68,7 @@
   <section class="page" data-page="home">
     <div class="wrap hero">
       <div class="hero-text">
+        <div class="building-badge" id="buildingBadge" hidden><span class="bb-dot"></span>Currently building: <span class="bb-repo" id="buildingRepo"></span></div>
         <div class="kicker accent" data-reveal>// AI AUTOMATION &amp; AGENTIC AI SYSTEMS ARCHITECT</div>
         <h1 class="hero-name" data-reveal data-rd="0.08">Dev Doshi</h1>
         <div class="typeline" data-reveal data-rd="0.16">
@@ -175,7 +177,7 @@
       <h2 class="page-title" data-reveal data-rd="0.08">Projects</h2>
       <p class="page-intro" data-reveal data-rd="0.16">Production automation and agentic AI systems. Select any unit to inspect the problem it eliminates and the architecture that runs it.</p>
       <div class="chips" id="chips" data-reveal data-rd="0.2"></div>
-      <div class="grid-cards grid-fill" id="projectGrid"></div>
+      <div class="bento-grid" id="projectGrid"></div>
     </div>
   </section>
 
@@ -275,21 +277,22 @@
 <!-- ============ PROJECT MODAL ============ -->
 <div class="overlay" id="projectModal" hidden>
   <div class="dialog corners4" role="dialog" aria-modal="true">
+    <div class="modal-scan" aria-hidden="true"></div>
     <i class="cor tr"></i><i class="cor bl"></i>
     <button class="close-btn" data-close aria-label="Close">&#10005;</button>
-    <div class="modal-kicker">SYSTEM <span id="opNum"></span> // <span class="accent upper" id="opCat"></span></div>
-    <h3 id="opTitle"></h3>
-    <div class="tool-row lg" id="opTools"></div>
+    <div class="modal-kicker cine-item" style="--si:0">SYSTEM <span id="opNum"></span> // <span class="accent upper" id="opCat"></span></div>
+    <h3 class="cine-item" style="--si:1" id="opTitle"></h3>
     <div class="ps-stack">
-      <div class="ps-box">
+      <div class="ps-box cine-item" style="--si:2">
         <div class="ps-label warn">&#9888; THE PROBLEM</div>
         <p id="opProblem"></p>
       </div>
-      <div class="ps-box solution">
+      <div class="ps-box solution cine-item" style="--si:3">
         <div class="ps-label ok">&#10003; THE SOLUTION</div>
         <p id="opSolution"></p>
       </div>
     </div>
+    <div class="tool-row lg cine-item" style="--si:4" id="opTools"></div>
   </div>
 </div>
 
@@ -306,12 +309,13 @@
 
 <!-- ============ LIGHTBOX ============ -->
 <div class="lightbox" id="lightbox" hidden>
+  <div class="lb-bg" id="lbBg" aria-hidden="true"></div>
   <button class="lb-btn lb-close" data-close aria-label="Close">&#10005;</button>
   <button class="lb-btn lb-prev" id="lbPrev" aria-label="Previous photo">&#8249;</button>
   <button class="lb-btn lb-next" id="lbNext" aria-label="Next photo">&#8250;</button>
   <div class="lb-stage">
     <img id="lbImg" src="" alt="Trek photo">
-    <div class="lb-count" id="lbCount"></div>
+    <div class="lb-count"><span id="lbLoc" class="lb-loc"></span> <span id="lbCount"></span></div>
   </div>
 </div>
 
@@ -329,6 +333,12 @@
 
 <!-- ============ BOOT SEQUENCE ============ -->
 <div class="boot" id="boot" hidden>
+  <canvas id="bootCanvas" aria-hidden="true"></canvas>
+  <div class="boot-core" aria-hidden="true"></div>
+  <div class="boot-cine">
+    <div class="boot-cine-title" id="bootCineTitle"></div>
+    <div class="boot-cine-sub" id="bootCineSub"></div>
+  </div>
   <div class="boot-panel">
     <div class="boot-head"><span>DOSHI.OS // BOOT_SEQUENCE</span><span>v2.6.0</span></div>
     <div class="boot-lines" id="bootLines"></div>
@@ -337,11 +347,18 @@
   </div>
 </div>
 
+<!-- Ambient soundscape toggle (opt-in, Web Audio only) -->
+<button id="soundToggle" class="sound-toggle" aria-label="Toggle ambient sound" hidden>
+  <span class="sound-eq"><i></i><i></i><i></i><i></i></span><span class="sound-label">AMBIENT</span>
+</button>
+
 <noscript><div style="position:fixed;inset:0;z-index:2000;background:#04060C;color:#E8F4FF;display:flex;align-items:center;justify-content:center;font-family:monospace;padding:24px;text-align:center">This portfolio needs JavaScript enabled. Contact: doshidev58@gmail.com</div></noscript>
 
 <!-- Three.js (3D particle field + effects). Deferred so it never blocks parse;
      main.js falls back to the 2D canvas field if this fails to load. -->
 <script defer src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<!-- Lenis smooth scroll (#10). Deferred; main.js no-ops gracefully if it fails. -->
+<script defer src="https://cdn.jsdelivr.net/npm/lenis@1.1.14/dist/lenis.min.js"></script>
 <script defer src="js/main.js"></script>
 </body>
 </html>

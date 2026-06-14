@@ -165,6 +165,13 @@
     !prefersReduced &&
     ((navigator.hardwareConcurrency || 8) >= 4);
   var field3D = null;
+  var lenis = null;       // Lenis smooth-scroll instance (#10)
+  var audioPulse = 0;     // 0..1 ambient-sound beat level (#5), drives particles + icon
+  var GH_USER = 'devdoshi245';
+  var ghLines = null;     // live GitHub log lines, or null -> fall back to LOG_EVENTS
+
+  function scrollY() { return lenis ? (lenis.scroll || 0) : (window.pageYOffset || document.documentElement.scrollTop || 0); }
+  function toTop() { if (lenis) lenis.scrollTo(0, { immediate: true }); else window.scrollTo(0, 0); }
 
   /* ---------- theme ---------- */
   function applyTheme(t) {
@@ -204,7 +211,7 @@
         el.classList.add('active');
       }
     });
-    window.scrollTo(0, 0);
+    toTop(); resetScrollFx();
     requestAnimationFrame(function () { scanReveals(); revealInView(); refreshLiftEls(); });
   }
 
@@ -216,7 +223,8 @@
     closeMenu();
     closeAllOverlays();
     renderNav();
-    if (samePage) { window.scrollTo(0, 0); return; }
+    if (field3D && field3D.swirl) field3D.swirl(); // particles vortex + resettle on section change (#2)
+    if (samePage) { toTop(); return; }
 
     clearFlipTimers();
     if (!ENABLE_3D || !document.body.classList.contains('fx-3d') || !cur || cur === next) {
@@ -229,7 +237,7 @@
     cur.classList.add('flip-out');
     flipTimers.push(setTimeout(function () {
       cur.classList.remove('active', 'flip-out');
-      window.scrollTo(0, 0);
+      toTop(); resetScrollFx();
       next.classList.add('active', 'flip-in');
       requestAnimationFrame(function () { scanReveals(); revealInView(); refreshLiftEls(); });
       flipTimers.push(setTimeout(function () { next.classList.remove('flip-in'); }, 440));
@@ -341,26 +349,41 @@
     $('#clock').textContent = pad(d.getHours()) + ':' + pad(d.getMinutes()) + ':' + pad(d.getSeconds());
   }
 
-  var logLines = [], logIdx = 0;
+  var logLines = [], logIdx = 0, logTypeTimer = null;
   function pushLog(seed) {
-    var ev = LOG_EVENTS[logIdx % LOG_EVENTS.length];
+    var pool = (ghLines && ghLines.length) ? ghLines : LOG_EVENTS; // live GitHub feed or static fallback
+    var ev = pool[logIdx % pool.length];
     logIdx++;
     var d = new Date(Date.now() - (seed ? Math.floor(Math.random() * 40000) : 0));
     logLines.push({ ts: pad(d.getHours()) + ':' + pad(d.getMinutes()) + ':' + pad(d.getSeconds()), ev: ev });
     logLines = logLines.slice(-5);
+    renderLog(!seed);
+  }
+  function renderLog(typeLast) {
     var box = $('#logLines');
-    if (box) {
-      box.innerHTML = logLines.map(function (l) {
-        return '<div class="log-line"><span class="ts">' + l.ts + '</span>' +
-          '<span class="tag" style="color:' + l.ev.color + '">' + esc(l.ev.tag) + '</span>' +
-          '<span class="txt">' + esc(l.ev.text) + '</span></div>';
-      }).join('');
+    if (!box) return;
+    box.innerHTML = logLines.map(function (l, idx) {
+      var last = idx === logLines.length - 1;
+      var txt = (last && typeLast) ? '' : esc(l.ev.text);
+      return '<div class="log-line"><span class="ts">' + l.ts + '</span>' +
+        '<span class="tag" style="color:' + l.ev.color + '">' + esc(l.ev.tag) + '</span>' +
+        '<span class="txt">' + txt + '</span></div>';
+    }).join('');
+    if (typeLast && logLines.length) {
+      var span = box.querySelector('.log-line:last-child .txt');
+      var full = logLines[logLines.length - 1].ev.text, i = 0;
+      if (logTypeTimer) clearTimeout(logTypeTimer);
+      (function tt() {
+        if (!span || !span.isConnected) return;
+        span.textContent = full.slice(0, i); i++;
+        if (i <= full.length) logTypeTimer = setTimeout(tt, 16);
+      })();
     }
   }
 
   /* ---------- renderers ---------- */
-  function projectCardHTML(p, idx, reveal) {
-    return '<article class="card proj-card tilt" data-project="' + idx + '"' + (reveal ? ' data-reveal' : '') + ' tabindex="0" role="button">' +
+  function projectCardHTML(p, idx, reveal, sizeClass) {
+    return '<article class="card proj-card tilt' + (sizeClass ? ' ' + sizeClass : '') + '" data-project="' + idx + '"' + (reveal ? ' data-reveal' : '') + ' tabindex="0" role="button">' +
       '<i class="cor tl"></i><i class="cor br"></i>' +
       '<div class="card-top"><span class="cat-badge">' + esc(p.cat) + '</span><span class="sys-num">' + sysNum(idx) + '</span></div>' +
       '<h3>' + esc(p.title) + '</h3>' +
@@ -382,10 +405,14 @@
     }).join('');
   }
 
+  var BENTO = ['b-hero', 'b-half', 'b-half', 'b-third', 'b-third', 'b-third'];
   function renderProjects() {
-    var html = '';
+    var html = '', pos = 0;
     PROJECTS.forEach(function (p, i) {
-      if (state.filter === 'All' || p.cat === state.filter) html += projectCardHTML(p, i, false);
+      if (state.filter === 'All' || p.cat === state.filter) {
+        html += projectCardHTML(p, i, false, BENTO[pos % BENTO.length]);
+        pos++;
+      }
     });
     $('#projectGrid').innerHTML = html;
   }
@@ -410,7 +437,7 @@
   function renderTreks() {
     $('#trekGrid').innerHTML = TREKS.map(function (tk, i) {
       return '<div class="trek-card" data-trek="' + i + '" data-reveal tabindex="0" role="button">' +
-        '<div class="trek-cover"><img src="' + esc(tk.cover || tk.photos[0]) + '" alt="' + esc(tk.name) + '" loading="lazy"></div>' +
+        '<div class="trek-cover"><img class="trek-photo" src="' + esc(tk.cover || tk.photos[0]) + '" alt="' + esc(tk.name) + '" loading="lazy"><div class="trek-pill">' + esc(tk.name) + '</div></div>' +
         '<div class="trek-body"><div class="trek-head"><h3>' + esc(tk.name) + '</h3><span class="trek-alt">' + esc(tk.alt) + '</span></div>' +
         '<div class="trek-loc">&#9906; ' + esc(tk.location) + '</div>' +
         '<p class="trek-vibe">' + esc(tk.vibe) + '</p>' +
@@ -462,9 +489,10 @@
     var locked = !$('#projectModal').hidden || !$('#trekModal').hidden || !$('#lightbox').hidden ||
       !$('#cmdModal').hidden || !$('#boot').hidden || state.menuOpen;
     document.body.style.overflow = locked ? 'hidden' : '';
+    if (lenis) { if (locked) lenis.stop(); else lenis.start(); }
   }
 
-  function openProject(idx) {
+  function openProject(idx, cardEl) {
     var p = PROJECTS[idx];
     $('#opNum').textContent = sysNum(idx);
     $('#opCat').textContent = p.cat;
@@ -472,8 +500,29 @@
     $('#opTools').innerHTML = p.tools.map(function (t) { return '<span class="tool-badge">' + esc(t) + '</span>'; }).join('');
     $('#opProblem').textContent = p.problem;
     $('#opSolution').textContent = p.solution;
-    $('#projectModal').hidden = false;
+    var overlay = $('#projectModal');
+    var dialog = overlay.querySelector('.dialog');
+    dialog.style.transition = ''; dialog.style.transform = ''; dialog.style.transformOrigin = '';
+    overlay.hidden = false;
+    // (re)start the cinematic entrance: backdrop blur, scanline, staggered content, X pulse
+    overlay.classList.remove('cine'); void overlay.offsetWidth; overlay.classList.add('cine');
     lockScroll();
+    // FLIP — morph from the clicked card into the full-screen modal (desktop only)
+    if (ENABLE_3D && cardEl && document.body.classList.contains('fx-3d')) {
+      var first = cardEl.getBoundingClientRect();
+      var last = dialog.getBoundingClientRect();
+      if (last.width && last.height) {
+        var sx = first.width / last.width, sy = first.height / last.height;
+        var dx = first.left - last.left, dy = first.top - last.top;
+        dialog.style.transformOrigin = 'top left';
+        dialog.style.transform = 'translate(' + dx + 'px,' + dy + 'px) scale(' + sx.toFixed(4) + ',' + sy.toFixed(4) + ')';
+        requestAnimationFrame(function () {
+          dialog.style.transition = 'transform .5s cubic-bezier(.22,.61,.36,1)';
+          dialog.style.transform = 'translate(0,0) scale(1,1)';
+          setTimeout(function () { dialog.style.transition = ''; dialog.style.transform = ''; dialog.style.transformOrigin = ''; }, 540);
+        });
+      }
+    }
   }
 
   function openTrek(idx) {
@@ -492,7 +541,10 @@
   function openLightbox(i) {
     if (!state.openTrek) return;
     state.lightbox = i;
-    $('#lbImg').src = state.openTrek.photos[i];
+    var src = state.openTrek.photos[i];
+    $('#lbImg').src = src;
+    var bg = $('#lbBg'); if (bg) bg.style.backgroundImage = 'url("' + src + '")';
+    var loc = $('#lbLoc'); if (loc) loc.textContent = state.openTrek.location;
     $('#lbCount').textContent = 'IMG ' + (i + 1) + ' / ' + state.openTrek.photos.length;
     $('#lightbox').hidden = false;
     lockScroll();
@@ -554,8 +606,19 @@
   function closeCmd() { $('#cmdModal').hidden = true; lockScroll(); }
 
   /* ---------- boot sequence ---------- */
-  var bootTimer = null, booting = false;
+  var bootTimer = null, booting = false, bootFx = null;
   function runBoot() {
+    $('#boot').hidden = false;
+    if (ENABLE_3D && window.THREE) {
+      try { runBootCinematic(); return; }
+      catch (e) {
+        $('#boot').classList.remove('boot--cine');
+        if (bootFx) { try { cancelAnimationFrame(bootFx.raf); } catch (er) {} bootFx = null; }
+      }
+    }
+    runBootSimple();
+  }
+  function runBootSimple() {
     booting = true;
     $('#boot').hidden = false;
     $('#bootLines').innerHTML = '';
@@ -581,10 +644,77 @@
   function finishBoot() {
     booting = false;
     if (bootTimer) clearTimeout(bootTimer);
+    if (bootFx) {
+      try { cancelAnimationFrame(bootFx.raf); } catch (e) {}
+      clearTimeout(bootFx.tt); clearTimeout(bootFx.st); clearTimeout(bootFx.safety);
+      try { bootFx.renderer.dispose(); } catch (e) {}
+      bootFx = null;
+    }
     try { sessionStorage.setItem('doshi-booted', '1'); } catch (e) {}
-    $('#boot').hidden = true;
+    var boot = $('#boot');
+    boot.hidden = true; boot.classList.remove('boot--cine');
     lockScroll();
+    document.body.classList.add('boot-slam');     // interface "slams in"
+    setTimeout(function () { document.body.classList.remove('boot-slam'); }, 650);
     requestAnimationFrame(function () { scanReveals(); revealInView(); });
+  }
+
+  function runBootCinematic() {
+    var boot = $('#boot');
+    boot.hidden = false; boot.classList.add('boot--cine');
+    booting = true; lockScroll();
+    var canvas = $('#bootCanvas');
+    var renderer = new THREE.WebGLRenderer({ canvas: canvas, alpha: true, antialias: false });
+    renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
+    renderer.setSize(window.innerWidth, window.innerHeight, false);
+    var scene = new THREE.Scene();
+    var camera = new THREE.PerspectiveCamera(60, window.innerWidth / window.innerHeight, 1, 3000);
+    camera.position.z = 620;
+    var N = 1600, targets = new Float32Array(N * 3), pos = new Float32Array(N * 3);
+    for (var i = 0; i < N; i++) {
+      targets[i * 3] = (Math.random() - 0.5) * 1900;
+      targets[i * 3 + 1] = (Math.random() - 0.5) * 1300;
+      targets[i * 3 + 2] = (Math.random() - 0.5) * 1300;
+    }
+    var geo = new THREE.BufferGeometry();
+    geo.setAttribute('position', new THREE.BufferAttribute(pos, 3));
+    var mat = new THREE.PointsMaterial({ size: 3, sizeAttenuation: true, transparent: true, opacity: 0.92, depthWrite: false, color: new THREE.Color(fieldColors.dot) });
+    var pts = new THREE.Points(geo, mat); scene.add(pts);
+    var start = performance.now(), EXPLODE = 1300;
+    bootFx = { renderer: renderer, raf: 0, tt: null, st: null, safety: null };
+    function loop() {
+      var t = performance.now() - start;
+      var k = Math.min(1, t / EXPLODE), e = 1 - Math.pow(1 - k, 3);   // ease-out explosion
+      for (var j = 0; j < N * 3; j++) pos[j] = targets[j] * e;
+      geo.attributes.position.needsUpdate = true;
+      pts.rotation.y = t * 0.0002;
+      camera.position.z = 620 - e * 120;
+      camera.lookAt(scene.position);
+      renderer.render(scene, camera);
+      bootFx.raf = requestAnimationFrame(loop);
+    }
+    bootFx.raf = requestAnimationFrame(loop);
+    typeBootText();
+    bootTimer = setTimeout(finishBoot, 3000);
+    bootFx.safety = setTimeout(finishBoot, 4400);   // hard guarantee the overlay never sticks
+  }
+  function typeBootText() {
+    var title = 'DOSHI.OS INITIALIZING...', sub = 'agentic runtime · neural field online';
+    var tEl = $('#bootCineTitle'), sEl = $('#bootCineSub');
+    if (!tEl || !sEl) return;
+    tEl.textContent = ''; sEl.textContent = '';
+    var i = 0;
+    (function tt() {
+      if (!booting || !bootFx) return;
+      if (i <= title.length) { tEl.textContent = title.slice(0, i); i++; bootFx.tt = setTimeout(tt, 55); }
+      else {
+        var j = 0;
+        (function st() {
+          if (!booting || !bootFx) return;
+          if (j <= sub.length) { sEl.textContent = sub.slice(0, j); j++; bootFx.st = setTimeout(st, 26); }
+        })();
+      }
+    })();
   }
 
   /* ---------- particle field ---------- */
@@ -681,21 +811,31 @@
       renderer.setSize(window.innerWidth, window.innerHeight, false);
     });
 
-    var camX = 0, camY = 0;
+    var camX = 0, camY = 0, camZ = 720;
+    field3D.scrollZoom = 0;   // set by onScrollFx: scroll down -> camera into the field
+    field3D.swirlV = 0;       // burst on section change, decays
+    field3D.audio = 0;        // ambient-sound beat level
+    field3D.swirl = function () { field3D.swirlV = 0.06; };
     function draw() {
+      var drift = 0.6 + field3D.audio * 1.1;
       var arr = geo.attributes.position.array;
       for (var i = 0; i < COUNT; i++) {
-        arr[i * 3 + 2] += 0.6;                                  // slow z-drift toward camera
+        arr[i * 3 + 2] += drift;                                // slow z-drift toward camera
         if (arr[i * 3 + 2] > DEPTH / 2) arr[i * 3 + 2] = -DEPTH / 2; // wrap
       }
       geo.attributes.position.needsUpdate = true;
       points.rotation.y += 0.0004;
+      points.rotation.z += field3D.swirlV;                      // vortex on section change
+      field3D.swirlV *= 0.92;
+      mat.size = 3 + field3D.audio * 2.6;                       // pulse with the beat
       var tx = (mouse.x < 0 ? window.innerWidth / 2 : mouse.x) / window.innerWidth - 0.5;
       var ty = (mouse.y < 0 ? window.innerHeight / 2 : mouse.y) / window.innerHeight - 0.5;
       camX += (tx * 130 - camX) * 0.04;
       camY += (-ty * 100 - camY) * 0.04;
+      camZ += ((720 - field3D.scrollZoom) - camZ) * 0.05;       // scroll-driven dolly
       camera.position.x = camX;
       camera.position.y = camY;
+      camera.position.z = camZ;
       camera.lookAt(scene.position);
       renderer.render(scene, camera);
       field3D.raf = requestAnimationFrame(draw);
@@ -1019,7 +1159,7 @@
         return;
       }
       var proj = t.closest && t.closest('[data-project]');
-      if (proj) { openProject(parseInt(proj.getAttribute('data-project'), 10)); return; }
+      if (proj) { openProject(parseInt(proj.getAttribute('data-project'), 10), proj); return; }
       var trek = t.closest && t.closest('[data-trek]');
       if (trek) { openTrek(parseInt(trek.getAttribute('data-trek'), 10)); return; }
       var photo = t.closest && t.closest('[data-photo]');
@@ -1087,15 +1227,187 @@
       }
     });
 
-    // reveal fallbacks
+    // lightbox swipe (mobile) (#8)
+    var tsx = 0, tsy = 0;
+    $('#lightbox').addEventListener('touchstart', function (e) { var t = e.changedTouches[0]; tsx = t.clientX; tsy = t.clientY; }, { passive: true });
+    $('#lightbox').addEventListener('touchend', function (e) {
+      var t = e.changedTouches[0], dx = t.clientX - tsx, dy = t.clientY - tsy;
+      if (Math.abs(dx) > 45 && Math.abs(dx) > Math.abs(dy)) lbStep(dx < 0 ? 1 : -1);
+    }, { passive: true });
+
+    // reveal fallbacks + scroll FX
     var scrollPend = false;
     window.addEventListener('scroll', function () {
       if (scrollPend) return;
       scrollPend = true;
-      requestAnimationFrame(function () { scrollPend = false; revealInView(); });
+      requestAnimationFrame(function () { scrollPend = false; revealInView(); onScrollFx(); });
     }, { passive: true });
     document.addEventListener('visibilitychange', function () { scanReveals(); revealInView(); });
     window.addEventListener('resize', function () { revealInView(); });
+  }
+
+  /* ---------- scroll-driven FX: depth-of-field + field reaction (#7, #2) ---------- */
+  function resetScrollFx() {
+    if (field3D) field3D.scrollZoom = 0;
+    var f = $('#field'); if (f) f.style.filter = '';
+    var hero = document.querySelector('.page[data-page="home"] .hero');
+    if (hero) { hero.style.filter = ''; hero.style.opacity = ''; }
+  }
+  function onScrollFx() {
+    var y = scrollY();
+    if (field3D) field3D.scrollZoom = Math.min(360, y * 0.25);   // scroll down -> dolly into field
+    if (ENABLE_3D) {
+      var vh = window.innerHeight || 800;
+      var p = Math.min(1, y / (vh * 0.85));                      // hero-exit progress
+      var f = $('#field');
+      if (f) f.style.filter = p > 0.02 ? 'blur(' + (p * 3.2).toFixed(1) + 'px)' : '';
+      if (state.page === 'home') {
+        var hero = document.querySelector('.page[data-page="home"] .hero');
+        if (hero) {
+          hero.style.filter = p > 0.02 ? 'blur(' + (p * 5).toFixed(1) + 'px)' : '';
+          hero.style.opacity = p > 0.02 ? String(1 - p * 0.5) : '';
+        }
+      }
+      updateTrekParallax();
+    }
+  }
+
+  /* ---------- trek parallax (#8) ---------- */
+  function updateTrekParallax() {
+    if (!ENABLE_3D || state.page !== 'treks') return;
+    var vh = window.innerHeight;
+    $$('.trek-card').forEach(function (card) {
+      var img = card.querySelector('.trek-photo'); if (!img) return;
+      var r = card.getBoundingClientRect();
+      if (r.bottom < -40 || r.top > vh + 40) return;
+      var off = ((r.top + r.height / 2) - vh / 2) / vh;          // photo moves at ~0.5x frame
+      var ty = Math.max(-22, Math.min(22, -off * 36));
+      img.style.transform = 'translateY(' + ty.toFixed(1) + 'px) scale(' + (card._hover ? 1.08 : 1) + ')';
+    });
+  }
+  function setupTrekParallax() {
+    $$('.trek-card').forEach(function (card) {
+      card.addEventListener('mouseenter', function () { card._hover = true; updateTrekParallax(); });
+      card.addEventListener('mouseleave', function () { card._hover = false; updateTrekParallax(); });
+    });
+  }
+
+  /* ---------- Lenis smooth scroll (#10) ---------- */
+  function setupLenis() {
+    if (!window.Lenis) return;
+    try {
+      lenis = new Lenis({ duration: 1.1, smoothWheel: true, wheelMultiplier: 1, touchMultiplier: 1.6 });
+      var raf = function (t) { lenis.raf(t); requestAnimationFrame(raf); };
+      requestAnimationFrame(raf);
+      lenis.on('scroll', onScrollFx);
+    } catch (e) { lenis = null; }
+  }
+
+  /* ---------- ambient soundscape (#5) — Web Audio only, opt-in ---------- */
+  function setupSound() {
+    var btn = $('#soundToggle'); if (!btn) return;
+    btn.hidden = false;
+    var ctx = null, master = null, on = false, BEAT = 0.85;
+    function impulse(d, decay) {
+      var rate = ctx.sampleRate, len = Math.floor(rate * d), buf = ctx.createBuffer(2, len, rate);
+      for (var ch = 0; ch < 2; ch++) { var data = buf.getChannelData(ch); for (var i = 0; i < len; i++) data[i] = (Math.random() * 2 - 1) * Math.pow(1 - i / len, decay); }
+      return buf;
+    }
+    function build() {
+      var AC = window.AudioContext || window.webkitAudioContext; if (!AC) return false;
+      ctx = new AC();
+      master = ctx.createGain(); master.gain.value = 0; master.connect(ctx.destination);
+      var lp = ctx.createBiquadFilter(); lp.type = 'lowpass'; lp.frequency.value = 380; lp.Q.value = 0.7;
+      var trem = ctx.createGain(); trem.gain.value = 0.7;
+      lp.connect(trem); trem.connect(master);
+      var conv = ctx.createConvolver(); conv.buffer = impulse(2.4, 2.5);
+      var wet = ctx.createGain(); wet.gain.value = 0.5; trem.connect(conv); conv.connect(wet); wet.connect(master);
+      [55, 110, 164.81].forEach(function (f, idx) {
+        var o = ctx.createOscillator(); o.type = 'sine'; o.frequency.value = f;
+        var g = ctx.createGain(); g.gain.value = idx === 0 ? 0.5 : (idx === 1 ? 0.28 : 0.12);
+        o.connect(g); g.connect(lp); o.start();
+      });
+      var lfo = ctx.createOscillator(); lfo.type = 'sine'; lfo.frequency.value = BEAT;
+      var lfoGain = ctx.createGain(); lfoGain.gain.value = 0.35;
+      lfo.connect(lfoGain); lfoGain.connect(trem.gain); lfo.start();
+      return true;
+    }
+    function start() {
+      if (!ctx && !build()) return;
+      ctx.resume();
+      master.gain.cancelScheduledValues(ctx.currentTime);
+      master.gain.setValueAtTime(master.gain.value, ctx.currentTime);
+      master.gain.linearRampToValueAtTime(0.16, ctx.currentTime + 1.2);
+      on = true; btn.classList.add('on');
+      try { localStorage.setItem('doshi-sound', 'on'); } catch (e) {}
+    }
+    function stop() {
+      on = false; btn.classList.remove('on');
+      if (master && ctx) {
+        master.gain.cancelScheduledValues(ctx.currentTime);
+        master.gain.setValueAtTime(master.gain.value, ctx.currentTime);
+        master.gain.linearRampToValueAtTime(0, ctx.currentTime + 0.5);
+      }
+      audioPulse = 0; if (field3D) field3D.audio = 0;
+      try { localStorage.setItem('doshi-sound', 'off'); } catch (e) {}
+    }
+    btn.addEventListener('click', function () { on ? stop() : start(); });
+    (function vis() {
+      if (on) {
+        var t = ctx ? ctx.currentTime : performance.now() / 1000;
+        var v = (Math.sin(t * 2 * Math.PI * BEAT - Math.PI / 2) + 1) / 2;
+        audioPulse = v; if (field3D) field3D.audio = v * 0.9;
+        btn.style.setProperty('--lvl', v.toFixed(2));
+      }
+      requestAnimationFrame(vis);
+    })();
+    // honor saved preference but respect autoplay policy (resume on first gesture)
+    try {
+      if (localStorage.getItem('doshi-sound') === 'on') {
+        var once = function () { window.removeEventListener('pointerdown', once); start(); };
+        window.addEventListener('pointerdown', once, { once: true });
+      }
+    } catch (e) {}
+  }
+
+  /* ---------- GitHub live data (#6, #9) — fail silently to fallbacks ---------- */
+  function mapEvents(evts) {
+    var out = [];
+    for (var i = 0; i < evts.length && out.length < 10; i++) {
+      var e = evts[i], repo = ((e.repo && e.repo.name) || '').split('/').pop();
+      if (!repo) continue;
+      var tag = null, txt = null, color = 'var(--accent)';
+      if (e.type === 'PushEvent') {
+        var br = ((e.payload && e.payload.ref) || '').split('/').pop() || 'main';
+        var n = (e.payload && (e.payload.size || (e.payload.commits && e.payload.commits.length))) || 1;
+        tag = 'PUSH'; txt = '→ ' + repo + ' / ' + br + ' (' + n + ' commit' + (n > 1 ? 's' : '') + ')';
+      } else if (e.type === 'CreateEvent') { tag = 'CREATE'; txt = '→ ' + repo + ' — ' + ((e.payload && e.payload.ref_type) || 'repo'); color = 'var(--success)'; }
+      else if (e.type === 'WatchEvent') { tag = 'STAR'; txt = '→ ' + repo; color = 'var(--warn)'; }
+      else if (e.type === 'PullRequestEvent') { tag = 'PR'; txt = '→ ' + repo + ' #' + ((e.payload && e.payload.number) || ''); color = 'var(--accent2)'; }
+      else if (e.type === 'IssuesEvent') { tag = 'ISSUE'; txt = '→ ' + repo + ' — ' + ((e.payload && e.payload.action) || ''); color = 'var(--accent2)'; }
+      else if (e.type === 'ForkEvent') { tag = 'FORK'; txt = '→ ' + repo; }
+      else if (e.type === 'ReleaseEvent') { tag = 'RELEASE'; txt = '→ ' + repo + ' ' + ((e.payload && e.payload.release && e.payload.release.tag_name) || ''); color = 'var(--success)'; }
+      else continue;
+      out.push({ tag: tag, text: txt, color: color });
+    }
+    return out;
+  }
+  function ghFetch() {
+    fetch('https://api.github.com/users/' + GH_USER + '/events/public?per_page=30')
+      .then(function (r) { if (!r.ok) throw 0; return r.json(); })
+      .then(function (evts) { if (Array.isArray(evts)) { var lines = mapEvents(evts); if (lines.length) ghLines = lines; } })
+      .catch(function () {});
+  }
+  function ghBadge() {
+    fetch('https://api.github.com/users/' + GH_USER + '/repos?sort=pushed&per_page=1')
+      .then(function (r) { if (!r.ok) throw 0; return r.json(); })
+      .then(function (repos) {
+        if (Array.isArray(repos) && repos[0] && repos[0].name) {
+          $('#buildingRepo').textContent = repos[0].name;
+          $('#buildingBadge').hidden = false;
+        }
+      })
+      .catch(function () {});
   }
 
   /* ---------- init ---------- */
@@ -1129,7 +1441,13 @@
       document.body.classList.add('fx-3d');
       setupHeroTilt();
       setupTagSphere();
+      setupTrekParallax();
+      setupLenis();
     }
+    setupSound();
+    ghBadge();                          // "Currently building" badge (#9)
+    ghFetch();                          // live ops feed (#6)
+    setInterval(ghFetch, 60000);
 
     tickClock();
     setInterval(tickClock, 1000);
