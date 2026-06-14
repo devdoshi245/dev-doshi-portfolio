@@ -293,7 +293,7 @@
   /* ---------- stats count-up ---------- */
   function renderStats() {
     $('#statCards').innerHTML = STAT_CARDS.map(function (st, i) {
-      return '<div class="card stat-card" data-reveal>' +
+      return '<div class="card stat-card tilt" data-reveal>' +
         '<div class="stat-top"><span class="stat-value"><span id="statV' + i + '">0</span><span class="accent">+</span></span>' +
         '<span class="stat-title">' + esc(st.title) + '</span></div>' +
         '<div class="stat-sub">' + esc(st.sub) + '</div>' +
@@ -354,6 +354,10 @@
     var pool = (ghLines && ghLines.length) ? ghLines : LOG_EVENTS; // live GitHub feed or static fallback
     var ev = pool[logIdx % pool.length];
     logIdx++;
+    // never render the same line twice in a row
+    var prev = logLines.length ? logLines[logLines.length - 1].ev : null;
+    var guard = 0;
+    while (prev && ev.text === prev.text && guard < pool.length) { ev = pool[logIdx % pool.length]; logIdx++; guard++; }
     var d = new Date(Date.now() - (seed ? Math.floor(Math.random() * 40000) : 0));
     logLines.push({ ts: pad(d.getHours()) + ':' + pad(d.getMinutes()) + ':' + pad(d.getSeconds()), ev: ev });
     logLines = logLines.slice(-5);
@@ -365,7 +369,7 @@
     box.innerHTML = logLines.map(function (l, idx) {
       var last = idx === logLines.length - 1;
       var txt = (last && typeLast) ? '' : esc(l.ev.text);
-      return '<div class="log-line"><span class="ts">' + l.ts + '</span>' +
+      return '<div class="log-line' + (last && typeLast ? ' lognew' : '') + '"><span class="ts">' + l.ts + '</span>' +
         '<span class="tag" style="color:' + l.ev.color + '">' + esc(l.ev.tag) + '</span>' +
         '<span class="txt">' + txt + '</span></div>';
     }).join('');
@@ -870,6 +874,19 @@
     hero.addEventListener('mouseleave', function () { tx = 0; ty = 0; kick(); });
   }
 
+  /* ---------- live-ops holographic panel tilt (#4A) ---------- */
+  function setupPanelTilt() {
+    var grid = $('.liveops-grid');
+    if (!grid) return;
+    grid.addEventListener('mousemove', function (e) {
+      var r = grid.getBoundingClientRect();
+      var x = (e.clientX - r.left) / r.width - 0.5;
+      var y = (e.clientY - r.top) / r.height - 0.5;
+      grid.style.transform = 'rotateX(' + (2 - y * 3).toFixed(2) + 'deg) rotateY(' + (x * 3).toFixed(2) + 'deg)';
+    });
+    grid.addEventListener('mouseleave', function () { grid.style.transform = 'rotateX(2deg)'; });
+  }
+
   /* ---------- 3D orbiting tech sphere (#5) ----------
      CSS3D: each tag is positioned by JS-rotated Fibonacci-sphere points,
      so text always faces the viewer. Click-drag spins it any direction
@@ -1002,8 +1019,12 @@
       var r = el.getBoundingClientRect();
       var x = (e.clientX - r.left) / r.width - 0.5;
       var y = (e.clientY - r.top) / r.height - 0.5;
-      el.style.transform = 'perspective(900px) rotateX(' + (-y * 5).toFixed(2) + 'deg) rotateY(' + (x * 7).toFixed(2) + 'deg) translateY(-3px)';
-      el.style.borderColor = 'rgba(0, 229, 255, 0.45)';
+      var mag = Math.min(1, Math.abs(x) + Math.abs(y));   // tilt magnitude -> glow intensity
+      // dramatic tilt + physical lift out of the page
+      el.style.transform = 'perspective(900px) rotateX(' + (-y * 12).toFixed(2) + 'deg) rotateY(' + (x * 14).toFixed(2) + 'deg) translateZ(20px)';
+      el.style.borderColor = 'rgba(0, 255, 200, 0.45)';
+      el.style.boxShadow = '0 24px 60px rgba(0,0,0,0.45), 0 0 ' + Math.round(18 + mag * 46) + 'px rgba(0, 229, 255, ' + (0.22 + mag * 0.4).toFixed(2) + ')';
+      el.style.zIndex = '6';
       // moving specular highlight (CSS ::after reads these)
       el.style.setProperty('--mx', (e.clientX - r.left) + 'px');
       el.style.setProperty('--my', (e.clientY - r.top) + 'px');
@@ -1013,6 +1034,8 @@
       if (!el || (e.relatedTarget && el.contains(e.relatedTarget))) return;
       el.style.transform = '';
       el.style.borderColor = '';
+      el.style.boxShadow = '';
+      el.style.zIndex = '';
     });
   }
 
@@ -1370,10 +1393,20 @@
     } catch (e) {}
   }
 
-  /* ---------- GitHub live data (#6, #9) — fail silently to fallbacks ---------- */
+  /* ---------- GitHub live data (#6) — fail silently to fallbacks ---------- */
+  var OPS_FALLBACK = [
+    { tag: 'PUSH', text: '→ dev-doshi-portfolio / main (2 commits)', color: 'var(--accent)' },
+    { tag: 'BUILD', text: '→ agentic-ops-engine · passed in 38s', color: 'var(--success)' },
+    { tag: 'DEPLOY', text: '→ vercel · production · live', color: 'var(--success)' },
+    { tag: 'SYNC', text: '→ n8n-workflows ↔ Airtable · 142 rows', color: 'var(--accent)' },
+    { tag: 'AGENT_RUN', text: '→ lead-enrichment · 56 records processed', color: 'var(--accent2)' },
+    { tag: 'PUSH', text: '→ voice-qual-engine / dev (4 commits)', color: 'var(--accent)' },
+    { tag: 'DEPLOY', text: '→ seo-publisher · cron armed 06:00 IST', color: 'var(--warn)' },
+    { tag: 'AGENT_RUN', text: '→ invoice-matcher · PO #4821 reconciled', color: 'var(--success)' }
+  ];
   function mapEvents(evts) {
     var out = [];
-    for (var i = 0; i < evts.length && out.length < 10; i++) {
+    for (var i = 0; i < evts.length && out.length < 12; i++) {
       var e = evts[i], repo = ((e.repo && e.repo.name) || '').split('/').pop();
       if (!repo) continue;
       var tag = null, txt = null, color = 'var(--accent)';
@@ -1381,13 +1414,19 @@
         var br = ((e.payload && e.payload.ref) || '').split('/').pop() || 'main';
         var n = (e.payload && (e.payload.size || (e.payload.commits && e.payload.commits.length))) || 1;
         tag = 'PUSH'; txt = '→ ' + repo + ' / ' + br + ' (' + n + ' commit' + (n > 1 ? 's' : '') + ')';
-      } else if (e.type === 'CreateEvent') { tag = 'CREATE'; txt = '→ ' + repo + ' — ' + ((e.payload && e.payload.ref_type) || 'repo'); color = 'var(--success)'; }
-      else if (e.type === 'WatchEvent') { tag = 'STAR'; txt = '→ ' + repo; color = 'var(--warn)'; }
-      else if (e.type === 'PullRequestEvent') { tag = 'PR'; txt = '→ ' + repo + ' #' + ((e.payload && e.payload.number) || ''); color = 'var(--accent2)'; }
-      else if (e.type === 'IssuesEvent') { tag = 'ISSUE'; txt = '→ ' + repo + ' — ' + ((e.payload && e.payload.action) || ''); color = 'var(--accent2)'; }
-      else if (e.type === 'ForkEvent') { tag = 'FORK'; txt = '→ ' + repo; }
-      else if (e.type === 'ReleaseEvent') { tag = 'RELEASE'; txt = '→ ' + repo + ' ' + ((e.payload && e.payload.release && e.payload.release.tag_name) || ''); color = 'var(--success)'; }
+      } else if (e.type === 'CreateEvent') {
+        tag = 'CREATE';
+        txt = (e.payload && e.payload.ref_type === 'repository')
+          ? '→ new repo: ' + repo
+          : '→ new ' + ((e.payload && e.payload.ref_type) || 'ref') + ': ' + repo;
+        color = 'var(--success)';
+      } else if (e.type === 'WatchEvent') { tag = 'STAR'; txt = '→ starred: ' + repo; color = 'var(--warn)'; }
+      else if (e.type === 'ForkEvent') { tag = 'FORK'; txt = '→ forked: ' + repo; color = 'var(--accent)'; }
+      else if (e.type === 'IssuesEvent') { tag = 'ISSUE'; txt = '→ opened issue in: ' + repo; color = 'var(--accent2)'; }
+      else if (e.type === 'PullRequestEvent') { tag = 'PR'; txt = '→ pull request in: ' + repo; color = 'var(--accent2)'; }
+      else if (e.type === 'ReleaseEvent') { tag = 'RELEASE'; txt = '→ released: ' + repo + ' ' + ((e.payload && e.payload.release && e.payload.release.tag_name) || ''); color = 'var(--success)'; }
       else continue;
+      if (out.length && out[out.length - 1].text === txt) continue;  // never the same line twice in a row
       out.push({ tag: tag, text: txt, color: color });
     }
     return out;
@@ -1395,17 +1434,16 @@
   function ghFetch() {
     fetch('https://api.github.com/users/' + GH_USER + '/events/public?per_page=30')
       .then(function (r) { if (!r.ok) throw 0; return r.json(); })
-      .then(function (evts) { if (Array.isArray(evts)) { var lines = mapEvents(evts); if (lines.length) ghLines = lines; } })
-      .catch(function () {});
-  }
-  function ghBadge() {
-    fetch('https://api.github.com/users/' + GH_USER + '/repos?sort=pushed&per_page=1')
-      .then(function (r) { if (!r.ok) throw 0; return r.json(); })
-      .then(function (repos) {
-        if (Array.isArray(repos) && repos[0] && repos[0].name) {
-          $('#buildingRepo').textContent = repos[0].name;
-          $('#buildingBadge').hidden = false;
+      .then(function (evts) {
+        if (!Array.isArray(evts)) return;
+        var lines = mapEvents(evts);
+        // if the real feed is thin/repetitive (<5 distinct), pad with varied ops lines
+        var seen = {}, distinct = 0;
+        lines.forEach(function (l) { if (!seen[l.text]) { seen[l.text] = 1; distinct++; } });
+        if (distinct < 5) {
+          OPS_FALLBACK.forEach(function (l) { if (!seen[l.text]) { lines.push(l); seen[l.text] = 1; } });
         }
+        if (lines.length) ghLines = lines.slice(0, 12);
       })
       .catch(function () {});
   }
@@ -1415,6 +1453,10 @@
     var theme = 'dark';
     try { if (localStorage.getItem('doshi-theme') === 'light') theme = 'light'; } catch (e) {}
     applyTheme(theme);
+
+    // FIX 5 — lightweight CSS-only 3D for phones/touch (mutually exclusive with the heavy fx-3d layer)
+    var IS_MOBILE = !ENABLE_3D && (window.innerWidth < 768 || ('ontouchstart' in window));
+    if (IS_MOBILE) document.body.classList.add('mobile');
 
     renderNav();
     renderStats();
@@ -1442,10 +1484,10 @@
       setupHeroTilt();
       setupTagSphere();
       setupTrekParallax();
+      setupPanelTilt();
       setupLenis();
     }
     setupSound();
-    ghBadge();                          // "Currently building" badge (#9)
     ghFetch();                          // live ops feed (#6)
     setInterval(ghFetch, 60000);
 

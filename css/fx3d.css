@@ -32,12 +32,12 @@
 .fx-3d .proj-card::after {
   content: ""; position: absolute; inset: 0; border-radius: 14px;
   pointer-events: none; opacity: 0; transition: opacity .3s ease; z-index: 2;
-  background: radial-gradient(circle 170px at var(--mx, 50%) var(--my, 50%),
-    rgba(190, 245, 255, .13), transparent 58%);
+  background: radial-gradient(circle 200px at var(--mx, 50%) var(--my, 50%),
+    rgba(255, 255, 255, .25), rgba(150, 240, 255, .1) 32%, transparent 62%);
 }
 html[data-theme="light"] .fx-3d .proj-card::after {
-  background: radial-gradient(circle 170px at var(--mx, 50%) var(--my, 50%),
-    rgba(0, 144, 175, .13), transparent 58%);
+  background: radial-gradient(circle 200px at var(--mx, 50%) var(--my, 50%),
+    rgba(0, 144, 175, .22), rgba(0, 144, 175, .06) 32%, transparent 62%);
 }
 .fx-3d .proj-card:hover::after { opacity: 1; }
 

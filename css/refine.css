@@ -1,0 +1,77 @@
+/* ============================================================
+   DEV DOSHI .OS — refinement pass
+   FIX 3 (project cards), FIX 4 (live-ops 3D), FIX 5 (mobile 3D).
+   Glass is global; heavy 3D stays under .fx-3d; mobile layer under
+   body.mobile. Nothing here changes content.
+   ============================================================ */
+
+/* ---------- FIX 3A / 4C — glassmorphism for project + stat cards (all devices) ---------- */
+.proj-card, .stat-card {
+  background: rgba(0, 255, 200, 0.03);
+  border: 1px solid rgba(0, 255, 200, 0.15);
+  -webkit-backdrop-filter: blur(12px); backdrop-filter: blur(12px);
+  box-shadow: inset 0 1px 0 rgba(0, 255, 200, 0.09), inset 0 0 30px rgba(0, 229, 255, 0.045);
+}
+html[data-theme="light"] .proj-card, html[data-theme="light"] .stat-card {
+  background: rgba(255, 255, 255, 0.55);
+  border-color: rgba(0, 144, 175, 0.22);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.7), inset 0 0 30px rgba(0, 144, 175, 0.05);
+}
+
+/* ---------- FIX 3C/D/E — brackets lock-on, hover glow pulse, SYS flicker ---------- */
+.fx-3d .proj-card { transition: transform .18s ease, border-color .25s ease, box-shadow .25s ease; }
+.fx-3d .proj-card .cor { transition: transform .3s cubic-bezier(.22,.61,.36,1); }
+.fx-3d .proj-card:hover .cor.tl { transform: translate(-5px, -5px); }
+.fx-3d .proj-card:hover .cor.br { transform: translate(5px, 5px); }
+/* one-time glow pulse on hover-enter, then hold (JS layers the tilt-scaled steady glow on top) */
+.fx-3d .proj-card::before {
+  content: ""; position: absolute; inset: -1px; border-radius: 14px; pointer-events: none;
+  opacity: 0; z-index: 0; box-shadow: 0 0 34px 4px var(--glow-strong);
+}
+.fx-3d .proj-card:hover::before { animation: cardPulse .7s cubic-bezier(.22,.61,.36,1) forwards; }
+@keyframes cardPulse { 0% { opacity: 0; } 45% { opacity: 1; } 100% { opacity: .55; } }
+.fx-3d .proj-card:hover .sys-num { animation: sysFlicker .55s steps(1) 1; }
+@keyframes sysFlicker { 0%,100% { opacity: 1; } 15% { opacity: .25; } 30% { opacity: .85; } 45% { opacity: .15; } 60% { opacity: .7; } 80% { opacity: .4; } }
+
+/* ---------- FIX 4A — holographic live-ops panel ---------- */
+.fx-3d .liveops { perspective: 1300px; }
+.fx-3d .liveops-grid { transform-style: preserve-3d; transform: rotateX(2deg); transition: transform .2s ease; }
+.fx-3d .liveops .card { border-top-color: rgba(0, 255, 200, 0.35); box-shadow: inset 0 1px 0 rgba(0, 255, 200, 0.16); }
+.fx-3d .liveops .terminal, .fx-3d .term-body { transform-style: preserve-3d; }
+
+/* ---------- FIX 4B — log lines depth ---------- */
+.fx-3d .log-line { transition: transform .2s ease, filter .2s ease; }
+.fx-3d .log-line:hover { transform: translateZ(8px); filter: brightness(1.45); }
+.fx-3d .log-line.lognew { animation: logIn .42s cubic-bezier(.22,.61,.36,1); }
+@keyframes logIn { from { opacity: 0; transform: translateX(-10px) translateZ(-20px); } to { opacity: 1; transform: none; } }
+
+/* ---------- FIX 4C — 3D-extruded stat numbers ---------- */
+.fx-3d .stat-value { text-shadow: 2px 2px 0 rgba(0, 229, 255, .32), 3px 3px 0 rgba(0, 0, 0, .25); }
+html[data-theme="light"] .fx-3d .stat-value { text-shadow: 2px 2px 0 rgba(0, 144, 175, .3), 3px 3px 0 rgba(0, 0, 0, .12); }
+
+/* ---------- FIX 4D — STREAMING dot 3D ripple ---------- */
+.fx-3d .streaming .pulse-dot { position: relative; }
+.fx-3d .streaming .pulse-dot::before, .fx-3d .streaming .pulse-dot::after {
+  content: ""; position: absolute; inset: -1px; border-radius: 50%;
+  border: 1px solid var(--success); animation: ripple3d 2s ease-out infinite;
+}
+.fx-3d .streaming .pulse-dot::after { animation-delay: 1s; }
+@keyframes ripple3d { 0% { opacity: .8; transform: scale(1); } 100% { opacity: 0; transform: scale(3.4); } }
+
+/* ---------- FIX 5 — lightweight mobile 3D (CSS-only, body.mobile) ---------- */
+body.mobile #projectGrid .proj-card { animation: cardRock 3s ease-in-out infinite alternate; transform-origin: center; }
+body.mobile #projectGrid .proj-card:nth-child(2n) { animation-delay: .6s; }
+body.mobile #projectGrid .proj-card:nth-child(3n) { animation-delay: 1.1s; }
+@keyframes cardRock { from { transform: perspective(800px) rotateY(-4deg); } to { transform: perspective(800px) rotateY(4deg); } }
+body.mobile .liveops-grid { transform: perspective(1000px) rotateX(2deg); }
+body.mobile .hero-text { animation: heroFloat 4s ease-in-out infinite alternate; }
+@keyframes heroFloat { from { transform: translateY(-6px); } to { transform: translateY(6px); } }
+body.mobile .page.active { animation: mobilePageIn .45s ease; }
+@keyframes mobilePageIn { from { opacity: 0; transform: scale(.98); } to { opacity: 1; transform: none; } }
+
+/* ---------- reduced motion ---------- */
+@media (prefers-reduced-motion: reduce) {
+  body.mobile #projectGrid .proj-card, body.mobile .hero-text, body.mobile .page.active,
+  .fx-3d .streaming .pulse-dot::before, .fx-3d .streaming .pulse-dot::after,
+  .fx-3d .proj-card:hover::before, .fx-3d .proj-card:hover .sys-num { animation: none !important; }
+}
