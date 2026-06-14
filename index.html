@@ -25,12 +25,14 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="css/styles.css">
+<link rel="stylesheet" href="css/fx3d.css">
 </head>
 <body>
 
 <canvas id="field" aria-hidden="true"></canvas>
 <div class="scanlines" aria-hidden="true"></div>
 <div class="vignette" aria-hidden="true"></div>
+<div id="cursorGlow" aria-hidden="true"></div>
 <div id="cursorRing" aria-hidden="true"></div>
 <div id="cursorDot" aria-hidden="true"></div>
 
@@ -137,10 +139,15 @@
       <div class="grid-cards" id="featured"></div>
     </div>
 
-    <!-- Stack marquee -->
+    <!-- Stack: 3D tech sphere (desktop) + marquee ticker -->
     <div class="section">
       <div class="wrap section-head" data-reveal>
         <span class="sec-label accent">03 // STACK</span><span class="rule"></span>
+      </div>
+      <!-- 3D orbiting tech sphere — shown only when fx-3d is enabled; JS fills #tagSphereRot -->
+      <div class="wrap" id="tagSphereWrap" hidden>
+        <div class="tag-sphere" id="tagSphere"><div class="tag-sphere-rot" id="tagSphereRot"></div></div>
+        <div class="tag-sphere-hint">&#9671; DRAG TO ROTATE &#183; LIVE STACK</div>
       </div>
       <div class="marquee" data-reveal>
         <div class="marquee-track" id="marqueeTrack"></div>
@@ -332,6 +339,9 @@
 
 <noscript><div style="position:fixed;inset:0;z-index:2000;background:#04060C;color:#E8F4FF;display:flex;align-items:center;justify-content:center;font-family:monospace;padding:24px;text-align:center">This portfolio needs JavaScript enabled. Contact: doshidev58@gmail.com</div></noscript>
 
-<script src="js/main.js"></script>
+<!-- Three.js (3D particle field + effects). Deferred so it never blocks parse;
+     main.js falls back to the 2D canvas field if this fails to load. -->
+<script defer src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script defer src="js/main.js"></script>
 </body>
 </html>

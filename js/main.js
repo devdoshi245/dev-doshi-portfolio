@@ -155,11 +155,23 @@
   var fieldColors = FIELD_COLORS.dark;
   var mouse = { x: -9999, y: -9999 };
 
+  /* ---------- 3D capability gate ----------
+     Heavy 3D (Three.js field, flips, sphere, tilt, depth glow) runs only
+     on capable devices. Phones, touch, reduced-motion and low-core machines
+     keep the original lightweight experience untouched. */
+  var prefersReduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  var ENABLE_3D = window.matchMedia('(min-width: 1024px)').matches &&
+    window.matchMedia('(pointer: fine)').matches &&
+    !prefersReduced &&
+    ((navigator.hardwareConcurrency || 8) >= 4);
+  var field3D = null;
+
   /* ---------- theme ---------- */
   function applyTheme(t) {
     state.theme = t;
     document.documentElement.setAttribute('data-theme', t);
     fieldColors = FIELD_COLORS[t] || FIELD_COLORS.dark;
+    if (field3D && field3D.mat) field3D.mat.color.set(fieldColors.dot);
     var label = $('#themeLabel');
     if (label) label.textContent = t === 'dark' ? 'LIGHT' : 'DARK';
     try { localStorage.setItem('doshi-theme', t); } catch (e) {}
@@ -180,22 +192,48 @@
     }).join('');
   }
 
-  function go(page) {
-    state.page = page;
-    closeMenu();
-    closeAllOverlays();
+  var flipTimers = [];
+  function clearFlipTimers() { flipTimers.forEach(clearTimeout); flipTimers = []; }
+
+  function showPageInstant(page) {
     $$('.page').forEach(function (el) {
       var on = el.getAttribute('data-page') === page;
-      el.classList.remove('active');
+      el.classList.remove('active', 'flip-out', 'flip-in');
       if (on) {
-        // retrigger the pageIn animation
-        void el.offsetWidth;
+        void el.offsetWidth; // retrigger the pageIn animation
         el.classList.add('active');
       }
     });
-    renderNav();
     window.scrollTo(0, 0);
-    requestAnimationFrame(function () { scanReveals(); revealInView(); });
+    requestAnimationFrame(function () { scanReveals(); revealInView(); refreshLiftEls(); });
+  }
+
+  function go(page) {
+    var cur = document.querySelector('.page.active');
+    var next = document.querySelector('.page[data-page="' + page + '"]');
+    var samePage = state.page === page && cur && cur === next;
+    state.page = page;
+    closeMenu();
+    closeAllOverlays();
+    renderNav();
+    if (samePage) { window.scrollTo(0, 0); return; }
+
+    clearFlipTimers();
+    if (!ENABLE_3D || !document.body.classList.contains('fx-3d') || !cur || cur === next) {
+      // phones / reduced-motion / first paint: instant switch (original behavior)
+      showPageInstant(page);
+      return;
+    }
+    // 3D flip: current page rotates away, incoming page flips in
+    cur.classList.remove('flip-in');
+    cur.classList.add('flip-out');
+    flipTimers.push(setTimeout(function () {
+      cur.classList.remove('active', 'flip-out');
+      window.scrollTo(0, 0);
+      next.classList.add('active', 'flip-in');
+      requestAnimationFrame(function () { scanReveals(); revealInView(); refreshLiftEls(); });
+      flipTimers.push(setTimeout(function () { next.classList.remove('flip-in'); }, 440));
+    }, 250));
   }
 
   function openMenu() {
@@ -607,16 +645,195 @@
     requestAnimationFrame(draw);
   }
 
-  /* ---------- custom cursor ---------- */
+  /* ---------- Three.js 3D particle field (#1) ----------
+     ~3000 points in true depth, drifting on z, with the camera tilting
+     toward the cursor for parallax. Reuses the existing #field canvas so
+     the 2D network never runs alongside it (no canvas conflict). */
+  function setupField3D() {
+    var canvas = $('#field');
+    var renderer = new THREE.WebGLRenderer({ canvas: canvas, alpha: true, antialias: false, powerPreference: 'high-performance' });
+    renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
+    renderer.setSize(window.innerWidth, window.innerHeight, false);
+
+    var scene = new THREE.Scene();
+    var camera = new THREE.PerspectiveCamera(62, window.innerWidth / window.innerHeight, 1, 3000);
+    camera.position.z = 720;
+
+    var COUNT = 3000, SPREAD = 1900, SPREAD_Y = 1300, DEPTH = 1500;
+    var positions = new Float32Array(COUNT * 3);
+    for (var i = 0; i < COUNT; i++) {
+      positions[i * 3] = (Math.random() - 0.5) * SPREAD;
+      positions[i * 3 + 1] = (Math.random() - 0.5) * SPREAD_Y;
+      positions[i * 3 + 2] = (Math.random() - 0.5) * DEPTH;
+    }
+    var geo = new THREE.BufferGeometry();
+    geo.setAttribute('position', new THREE.BufferAttribute(positions, 3));
+    var mat = new THREE.PointsMaterial({ size: 3, sizeAttenuation: true, transparent: true, opacity: 0.85, depthWrite: false });
+    mat.color = new THREE.Color(fieldColors.dot);
+    var points = new THREE.Points(geo, mat);
+    scene.add(points);
+
+    field3D = { renderer: renderer, mat: mat, points: points, camera: camera };
+
+    window.addEventListener('resize', function () {
+      camera.aspect = window.innerWidth / window.innerHeight;
+      camera.updateProjectionMatrix();
+      renderer.setSize(window.innerWidth, window.innerHeight, false);
+    });
+
+    var camX = 0, camY = 0;
+    function draw() {
+      var arr = geo.attributes.position.array;
+      for (var i = 0; i < COUNT; i++) {
+        arr[i * 3 + 2] += 0.6;                                  // slow z-drift toward camera
+        if (arr[i * 3 + 2] > DEPTH / 2) arr[i * 3 + 2] = -DEPTH / 2; // wrap
+      }
+      geo.attributes.position.needsUpdate = true;
+      points.rotation.y += 0.0004;
+      var tx = (mouse.x < 0 ? window.innerWidth / 2 : mouse.x) / window.innerWidth - 0.5;
+      var ty = (mouse.y < 0 ? window.innerHeight / 2 : mouse.y) / window.innerHeight - 0.5;
+      camX += (tx * 130 - camX) * 0.04;
+      camY += (-ty * 100 - camY) * 0.04;
+      camera.position.x = camX;
+      camera.position.y = camY;
+      camera.lookAt(scene.position);
+      renderer.render(scene, camera);
+      field3D.raf = requestAnimationFrame(draw);
+    }
+    field3D.raf = requestAnimationFrame(draw);
+  }
+
+  /* ---------- hero text: floating 3D card tilt (#2) ---------- */
+  function setupHeroTilt() {
+    var hero = document.querySelector('.page[data-page="home"] .hero');
+    var card = hero && hero.querySelector('.hero-text');
+    if (!hero || !card) return;
+    var tx = 0, ty = 0, cx = 0, cy = 0, raf = null;
+    function loop() {
+      cx += (tx - cx) * 0.08;
+      cy += (ty - cy) * 0.08;
+      card.style.transform = 'rotateX(' + (-cy * 6).toFixed(2) + 'deg) rotateY(' + (cx * 8).toFixed(2) + 'deg)';
+      if (Math.abs(cx - tx) > 0.0006 || Math.abs(cy - ty) > 0.0006) {
+        raf = requestAnimationFrame(loop);
+      } else {
+        raf = null;
+        if (tx === 0 && ty === 0) card.style.transform = '';
+      }
+    }
+    function kick() { if (!raf) raf = requestAnimationFrame(loop); }
+    hero.addEventListener('mousemove', function (e) {
+      var r = hero.getBoundingClientRect();
+      tx = (e.clientX - r.left) / r.width - 0.5;
+      ty = (e.clientY - r.top) / r.height - 0.5;
+      kick();
+    });
+    hero.addEventListener('mouseleave', function () { tx = 0; ty = 0; kick(); });
+  }
+
+  /* ---------- 3D orbiting tech sphere (#5) ----------
+     CSS3D: each tag is positioned by JS-rotated Fibonacci-sphere points,
+     so text always faces the viewer. Click-drag spins it any direction
+     with inertia; idles with a gentle auto-spin otherwise. */
+  function setupTagSphere() {
+    var wrap = $('#tagSphereWrap'), stage = $('#tagSphere'), rot = $('#tagSphereRot');
+    if (!wrap || !stage || !rot) return;
+    wrap.hidden = false;
+    var tags = TOOLS.map(function (t) {
+      var el = document.createElement('span');
+      el.className = 'tag-tag';
+      el.textContent = t;
+      rot.appendChild(el);
+      return el;
+    });
+    var N = tags.length, R = 168;
+    var base = [];
+    for (var i = 0; i < N; i++) {
+      var phi = Math.acos(1 - 2 * (i + 0.5) / N);
+      var theta = Math.PI * (1 + Math.sqrt(5)) * i;
+      base.push({ x: Math.cos(theta) * Math.sin(phi), y: Math.sin(theta) * Math.sin(phi), z: Math.cos(phi) });
+    }
+    var ax = 0.2, ay = 0, vax = 0, vay = 0.0035, dragging = false, lastX = 0, lastY = 0;
+    var IDLE = 0.0035, raf = null;
+    function frame() {
+      raf = requestAnimationFrame(frame);
+      if (wrap.offsetParent === null) return; // skip work while Home isn't visible
+      if (!dragging) {
+        ax += vax; ay += vay;
+        vax *= 0.94;
+        vay += (IDLE - vay) * 0.04;
+      }
+      var sinX = Math.sin(ax), cosX = Math.cos(ax), sinY = Math.sin(ay), cosY = Math.cos(ay);
+      for (var i = 0; i < N; i++) {
+        var p = base[i];
+        var x1 = p.x * cosY - p.z * sinY;
+        var z1 = p.x * sinY + p.z * cosY;
+        var y1 = p.y * cosX - z1 * sinX;
+        var z2 = p.y * sinX + z1 * cosX;
+        var el = tags[i];
+        el.style.transform = 'translate(-50%,-50%) translate3d(' +
+          (x1 * R).toFixed(1) + 'px,' + (y1 * R).toFixed(1) + 'px,' + (z2 * R).toFixed(1) + 'px)';
+        var depth = (z2 + 1) / 2;
+        el.style.opacity = (0.30 + depth * 0.70).toFixed(2);
+        el.style.zIndex = String(Math.round(depth * 100));
+      }
+    }
+    stage.addEventListener('pointerdown', function (e) {
+      dragging = true; lastX = e.clientX; lastY = e.clientY;
+      try { stage.setPointerCapture(e.pointerId); } catch (er) {}
+    });
+    stage.addEventListener('pointermove', function (e) {
+      if (!dragging) return;
+      var dx = e.clientX - lastX, dy = e.clientY - lastY;
+      lastX = e.clientX; lastY = e.clientY;
+      ay += dx * 0.009; ax -= dy * 0.009;
+      vay = dx * 0.0009; vax = -dy * 0.0009;
+    });
+    window.addEventListener('pointerup', function () { dragging = false; });
+    raf = requestAnimationFrame(frame);
+  }
+
+  /* ---------- cursor-proximity lift (#6) ---------- */
+  var liftEls = [];
+  function refreshLiftEls() { liftEls = $$('.about-stat, .contact-card, .foot-links a'); }
+  function resetLift(el) {
+    if (el._lift) { el.style.transform = ''; el.style.boxShadow = ''; el.style.borderColor = ''; el.style.zIndex = ''; el._lift = false; }
+  }
+  function updateProximity(mx, my) {
+    var R = 150, vh = window.innerHeight, vw = window.innerWidth;
+    for (var i = 0; i < liftEls.length; i++) {
+      var el = liftEls[i];
+      var r = el.getBoundingClientRect();
+      if (r.width === 0 || r.bottom < 0 || r.top > vh || r.right < 0 || r.left > vw) { resetLift(el); continue; }
+      var dx = mx - (r.left + r.width / 2), dy = my - (r.top + r.height / 2);
+      var d = Math.sqrt(dx * dx + dy * dy);
+      if (d < R) {
+        var k = 1 - d / R;
+        el.style.transform = 'scale(' + (1 + k * 0.05).toFixed(3) + ')';
+        el.style.boxShadow = '0 ' + Math.round(8 + k * 16) + 'px ' + Math.round(22 + k * 28) + 'px var(--glow-strong)';
+        el.style.borderColor = 'var(--accent)';
+        el.style.zIndex = '5';
+        el._lift = true;
+      } else {
+        resetLift(el);
+      }
+    }
+  }
+
+  /* ---------- custom cursor + depth glow (#6) ---------- */
   function setupCursor() {
     if (!window.matchMedia('(pointer: fine)').matches) return;
-    var dot = $('#cursorDot'), ring = $('#cursorRing');
+    var dot = $('#cursorDot'), ring = $('#cursorRing'), glow = $('#cursorGlow');
     document.body.classList.add('has-cursor');
-    var mx = -100, my = -100, rx = -100, ry = -100, shown = false, hot = false;
+    var mx = -100, my = -100, rx = -100, ry = -100, shown = false, hot = false, moved = false, lastX = -1, lastY = -1;
     window.addEventListener('mousemove', function (e) {
       mx = e.clientX; my = e.clientY;
       mouse.x = mx; mouse.y = my;
-      if (!shown) { shown = true; dot.style.opacity = '1'; ring.style.opacity = '0.65'; }
+      moved = true;
+      if (!shown) {
+        shown = true;
+        dot.style.opacity = '1'; ring.style.opacity = '0.65';
+        if (glow) glow.style.opacity = '1';
+      }
       var t = e.target;
       hot = !!(t && t.closest && t.closest('button, a, input, textarea, [role="button"]'));
     });
@@ -626,6 +843,11 @@
       dot.style.transform = 'translate(' + mx + 'px,' + my + 'px)';
       ring.style.transform = 'translate(' + rx + 'px,' + ry + 'px) scale(' + (hot ? 1.7 : 1) + ')';
       ring.style.borderColor = hot ? 'var(--success)' : 'var(--accent)';
+      if (glow) glow.style.transform = 'translate(' + mx + 'px,' + my + 'px)';
+      if (ENABLE_3D && moved && (mx !== lastX || my !== lastY)) {
+        lastX = mx; lastY = my; moved = false;
+        updateProximity(mx, my);
+      }
       requestAnimationFrame(step);
     }
     requestAnimationFrame(step);
@@ -642,6 +864,9 @@
       var y = (e.clientY - r.top) / r.height - 0.5;
       el.style.transform = 'perspective(900px) rotateX(' + (-y * 5).toFixed(2) + 'deg) rotateY(' + (x * 7).toFixed(2) + 'deg) translateY(-3px)';
       el.style.borderColor = 'rgba(0, 229, 255, 0.45)';
+      // moving specular highlight (CSS ::after reads these)
+      el.style.setProperty('--mx', (e.clientX - r.left) + 'px');
+      el.style.setProperty('--my', (e.clientY - r.top) + 'px');
     });
     document.addEventListener('mouseout', function (e) {
       var el = e.target.closest && e.target.closest('.tilt');
@@ -891,10 +1116,20 @@
     setupEvents();
     setupForm();
     setupResume();
-    setupField();
+    if (ENABLE_3D && window.THREE) {
+      try { setupField3D(); } catch (e) { field3D = null; setupField(); }
+    } else {
+      setupField();
+    }
     setupCursor();
     setupTilt();
     startTyping();
+    refreshLiftEls();
+    if (ENABLE_3D) {
+      document.body.classList.add('fx-3d');
+      setupHeroTilt();
+      setupTagSphere();
+    }
 
     tickClock();
     setInterval(tickClock, 1000);

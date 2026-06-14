@@ -1,0 +1,91 @@
+/* ============================================================
+   DEV DOSHI .OS — 3D upgrade layer
+   Every effect gates on  body.fx-3d , which main.js adds ONLY when the
+   device is capable (desktop width, fine pointer, motion not reduced,
+   >=4 cores). On phones / reduced-motion the class is never added, so
+   all of this stays dormant and the original 2D experience is untouched.
+   This file only layers depth on top — it changes no content.
+   ============================================================ */
+
+/* ---------- cursor depth glow (#6) ---------- */
+#cursorGlow {
+  position: fixed; top: 0; left: 0; z-index: 50;
+  width: 300px; height: 300px; margin: -150px 0 0 -150px;
+  border-radius: 50%; pointer-events: none; opacity: 0;
+  background: radial-gradient(circle, var(--glow) 0%, transparent 66%);
+  transition: opacity .35s ease;
+  will-change: transform;
+}
+
+/* ---------- hero text: floating 3D card (#2) ---------- */
+.fx-3d .hero { perspective: 1200px; }
+.fx-3d .hero-text {
+  transform-style: preserve-3d;
+  transition: transform .35s cubic-bezier(.22, .61, .36, 1);
+  will-change: transform;
+}
+
+/* ---------- project cards: moving specular highlight (#3) ----------
+   The tilt itself is the existing JS in setupTilt(); this adds the
+   light sheen that tracks the cursor via --mx / --my. */
+.fx-3d .proj-card { transform-style: preserve-3d; }
+.fx-3d .proj-card::after {
+  content: ""; position: absolute; inset: 0; border-radius: 14px;
+  pointer-events: none; opacity: 0; transition: opacity .3s ease; z-index: 2;
+  background: radial-gradient(circle 170px at var(--mx, 50%) var(--my, 50%),
+    rgba(190, 245, 255, .13), transparent 58%);
+}
+html[data-theme="light"] .fx-3d .proj-card::after {
+  background: radial-gradient(circle 170px at var(--mx, 50%) var(--my, 50%),
+    rgba(0, 144, 175, .13), transparent 58%);
+}
+.fx-3d .proj-card:hover::after { opacity: 1; }
+
+/* ---------- cursor-proximity lift smoothing (#6) ---------- */
+.fx-3d .about-stat, .fx-3d .contact-card, .fx-3d .foot-links a {
+  transition: transform .2s ease, box-shadow .2s ease, border-color .25s ease;
+}
+
+/* ---------- section 3D flip (#4) ---------- */
+.fx-3d main { perspective: 1600px; }
+.fx-3d .page { transform-origin: 50% 45%; backface-visibility: hidden; }
+.fx-3d .page.flip-out { animation: pageFlipOut .25s cubic-bezier(.55, 0, .78, .2) forwards; }
+.fx-3d .page.active.flip-in { animation: pageFlipIn .44s cubic-bezier(.22, .61, .36, 1) both; }
+@keyframes pageFlipOut {
+  from { opacity: 1; transform: rotateY(0deg) scale(1); }
+  to   { opacity: 0; transform: rotateY(-90deg) scale(.85); }
+}
+@keyframes pageFlipIn {
+  from { opacity: 0; transform: rotateY(90deg) scale(.85); }
+  to   { opacity: 1; transform: rotateY(0deg) scale(1); }
+}
+
+/* ---------- tech sphere (#5) ---------- */
+#tagSphereWrap { padding-top: 4px; padding-bottom: 30px; }
+#tagSphereWrap[hidden] { display: none; }
+.tag-sphere {
+  position: relative; width: 100%; height: 430px; margin: 0 auto;
+  perspective: 900px; cursor: grab; touch-action: none;
+}
+.tag-sphere:active { cursor: grabbing; }
+.tag-sphere-rot {
+  position: absolute; top: 50%; left: 50%; width: 0; height: 0;
+  transform-style: preserve-3d;
+}
+.tag-tag {
+  position: absolute; top: 0; left: 0; pointer-events: none; white-space: nowrap;
+  font-family: 'JetBrains Mono', monospace; font-size: 12.5px; letter-spacing: .06em;
+  color: var(--soft); background: var(--panel); border: 1px solid var(--border-dim);
+  border-radius: 7px; padding: 5px 11px; will-change: transform, opacity;
+  -webkit-backdrop-filter: blur(4px); backdrop-filter: blur(4px);
+}
+.tag-sphere-hint {
+  text-align: center; font-family: 'JetBrains Mono', monospace;
+  font-size: 10.5px; letter-spacing: .18em; color: var(--muted); margin-top: 4px;
+}
+
+/* ---------- safety: never animate under reduced motion ---------- */
+@media (prefers-reduced-motion: reduce) {
+  .fx-3d .page.flip-out, .fx-3d .page.active.flip-in { animation: none !important; }
+  #cursorGlow { display: none; }
+}
