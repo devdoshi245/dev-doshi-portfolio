@@ -157,15 +157,15 @@
   var ambientOn = false;
   var mouse = { x: -9999, y: -9999 };
 
-  /* ---------- 3D capability gate ----------
-     Heavy 3D (Three.js field, flips, sphere, tilt, depth glow) runs only
-     on capable devices. Phones, touch, reduced-motion and low-core machines
-     keep the original lightweight experience untouched. */
+  /* ---------- 3D experience gate ----------
+     Full 3D runs on every device, phones included. The only gate left is
+     prefers-reduced-motion (an explicit accessibility choice we honor). The
+     WebGL particle field, tech sphere, cinematic boot, holographic transitions
+     and depth styling now run everywhere. Mouse-only effects (custom cursor,
+     hover tilts) stay gated on pointer:fine inside their own setup functions,
+     so they simply no-op on touch where there is no cursor. */
   var prefersReduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-  var ENABLE_3D = window.matchMedia('(min-width: 1024px)').matches &&
-    window.matchMedia('(pointer: fine)').matches &&
-    !prefersReduced &&
-    ((navigator.hardwareConcurrency || 8) >= 4);
+  var ENABLE_3D = !prefersReduced;
   var field3D = null;
   var lenis = null;       // Lenis smooth-scroll instance (#10)
   var GH_USER = 'devdoshi245';
@@ -1346,6 +1346,9 @@
   /* ---------- Lenis smooth scroll (#10) ---------- */
   function setupLenis() {
     if (!window.Lenis) return;
+    // Touch devices keep native momentum scroll — it's smoother than Lenis on
+    // phones and Lenis isn't a *visible* effect, so this preserves parity.
+    if (!window.matchMedia('(pointer: fine)').matches) return;
     try {
       // lerp (frame-rate-independent) tracks the wheel far more responsively
       // than a fixed 1.1s duration, which is what made scrolling feel floaty.
