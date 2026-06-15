@@ -504,6 +504,9 @@
       !$('#cmdModal').hidden || !$('#boot').hidden || state.menuOpen;
     document.body.style.overflow = locked ? 'hidden' : '';
     if (lenis) { if (locked) lenis.stop(); else lenis.start(); }
+    // Pause the heavy WebGL field while something fully opaque covers it
+    // (lightbox / boot) — nothing to see, no reason to render 3,000 points.
+    if (field3D) field3D.paused = !$('#lightbox').hidden || !$('#boot').hidden;
   }
 
   function openProject(idx, cardEl) {
@@ -836,6 +839,8 @@
     field3D.swirl = function () { field3D.swirlV = 0.06; };
     var baseCol = new THREE.Color(), warmCol = new THREE.Color(AMBIENT.dot);
     function draw() {
+      field3D.raf = requestAnimationFrame(draw);
+      if (field3D.paused) return;                                  // fully hidden — skip the work
       field3D.aLevel += ((field3D.ambient ? 1 : 0) - field3D.aLevel) * 0.05; // ease ambient
       var aL = field3D.aLevel;
       var drift = 0.6 + aL * 0.5;
@@ -862,7 +867,6 @@
       camera.position.z = camZ;
       camera.lookAt(scene.position);
       renderer.render(scene, camera);
-      field3D.raf = requestAnimationFrame(draw);
     }
     field3D.raf = requestAnimationFrame(draw);
   }
@@ -1001,7 +1005,7 @@
     if (!window.matchMedia('(pointer: fine)').matches) return;
     var dot = $('#cursorDot'), ring = $('#cursorRing'), glow = $('#cursorGlow');
     document.body.classList.add('has-cursor');
-    var mx = -100, my = -100, rx = -100, ry = -100, shown = false, hot = false, moved = false, lastX = -1, lastY = -1;
+    var mx = -100, my = -100, rx = -100, ry = -100, shown = false, hot = false, moved = false, lastX = -1, lastY = -1, raf = null;
     window.addEventListener('mousemove', function (e) {
       mx = e.clientX; my = e.clientY;
       mouse.x = mx; mouse.y = my;
@@ -1013,6 +1017,7 @@
       }
       var t = e.target;
       hot = !!(t && t.closest && t.closest('button, a, input, textarea, [role="button"]'));
+      if (raf == null) raf = requestAnimationFrame(step);   // wake the loop on movement
     });
     function step() {
       rx += (mx - rx) * 0.16;
@@ -1025,9 +1030,11 @@
         lastX = mx; lastY = my; moved = false;
         updateProximity(mx, my);
       }
-      requestAnimationFrame(step);
+      // Idle out once the trailing ring has caught up and nothing is moving,
+      // instead of burning a frame every 16ms while the cursor sits still.
+      if (Math.abs(mx - rx) > 0.1 || Math.abs(my - ry) > 0.1) raf = requestAnimationFrame(step);
+      else raf = null;
     }
-    requestAnimationFrame(step);
   }
 
   /* ---------- card tilt ---------- */
@@ -1283,15 +1290,17 @@
     window.addEventListener('scroll', function () {
       if (scrollPend) return;
       scrollPend = true;
-      requestAnimationFrame(function () { scrollPend = false; revealInView(); onScrollFx(); });
+      requestAnimationFrame(function () { scrollPend = false; revealInView(); if (!lenis) onScrollFx(); });
     }, { passive: true });
     document.addEventListener('visibilitychange', function () { scanReveals(); revealInView(); });
     window.addEventListener('resize', function () { revealInView(); });
   }
 
   /* ---------- scroll-driven FX: depth-of-field + field reaction (#7, #2) ---------- */
+  var _fieldBlur = -1, _heroBlur = -1;       // last applied (quantized) blur radii
   function resetScrollFx() {
     if (field3D) field3D.scrollZoom = 0;
+    _fieldBlur = -1; _heroBlur = -1;
     var f = $('#field'); if (f) f.style.filter = '';
     var hero = document.querySelector('.page[data-page="home"] .hero');
     if (hero) { hero.style.filter = ''; hero.style.opacity = ''; }
@@ -1302,13 +1311,21 @@
     if (ENABLE_3D) {
       var vh = window.innerHeight || 800;
       var p = Math.min(1, y / (vh * 0.85));                      // hero-exit progress
+      // Quantize blur to whole-pixel steps and only touch the DOM when it
+      // actually changes. Re-rasterizing a full-screen blur on every scroll
+      // frame is the single biggest scroll-jank source; stepping it keeps the
+      // depth-of-field look while cutting raster work by ~10x.
       var f = $('#field');
-      if (f) f.style.filter = p > 0.02 ? 'blur(' + (p * 3.2).toFixed(1) + 'px)' : '';
+      if (f) {
+        var fb = p > 0.02 ? Math.round(p * 3) : 0;               // 0..3px
+        if (fb !== _fieldBlur) { _fieldBlur = fb; f.style.filter = fb ? 'blur(' + fb + 'px)' : ''; }
+      }
       if (state.page === 'home') {
         var hero = document.querySelector('.page[data-page="home"] .hero');
         if (hero) {
-          hero.style.filter = p > 0.02 ? 'blur(' + (p * 5).toFixed(1) + 'px)' : '';
-          hero.style.opacity = p > 0.02 ? String(1 - p * 0.5) : '';
+          var hb = p > 0.02 ? Math.round(p * 5) : 0;             // 0..5px
+          if (hb !== _heroBlur) { _heroBlur = hb; hero.style.filter = hb ? 'blur(' + hb + 'px)' : ''; }
+          hero.style.opacity = p > 0.02 ? String(1 - p * 0.5) : '';  // opacity is cheap — keep it smooth
         }
       }
       updateTrekParallax();
@@ -1339,7 +1356,9 @@
   function setupLenis() {
     if (!window.Lenis) return;
     try {
-      lenis = new Lenis({ duration: 1.1, smoothWheel: true, wheelMultiplier: 1, touchMultiplier: 1.6 });
+      // lerp (frame-rate-independent) tracks the wheel far more responsively
+      // than a fixed 1.1s duration, which is what made scrolling feel floaty.
+      lenis = new Lenis({ lerp: 0.12, smoothWheel: true, wheelMultiplier: 1, touchMultiplier: 1.5 });
       var raf = function (t) { lenis.raf(t); requestAnimationFrame(raf); };
       requestAnimationFrame(raf);
       lenis.on('scroll', onScrollFx);

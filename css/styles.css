@@ -111,13 +111,13 @@ body.has-cursor, body.has-cursor * { cursor: none !important; }
 #cursorRing {
   position: fixed; top: 0; left: 0; z-index: 9999; width: 34px; height: 34px;
   margin: -17px 0 0 -17px; border: 1px solid var(--accent); border-radius: 50%;
-  pointer-events: none; opacity: 0;
+  pointer-events: none; opacity: 0; will-change: transform;
   transition: width 0.2s ease, height 0.2s ease, margin 0.2s ease;
 }
 #cursorDot {
   position: fixed; top: 0; left: 0; z-index: 9999; width: 6px; height: 6px;
   margin: -3px 0 0 -3px; background: var(--accent); border-radius: 50%;
-  box-shadow: 0 0 10px var(--accent); pointer-events: none; opacity: 0;
+  box-shadow: 0 0 10px var(--accent); pointer-events: none; opacity: 0; will-change: transform;
 }
 
 .site { position: relative; z-index: 1; min-height: 100vh; display: flex; flex-direction: column; }
@@ -136,7 +136,9 @@ main { flex: 1; }
 .topbar {
   position: sticky; top: 0; z-index: 200;
   background: var(--nav-bg);
-  backdrop-filter: blur(14px); -webkit-backdrop-filter: blur(14px);
+  /* 10px reads the same as 14 on a thin bar but re-blurs the scrolling
+     content behind it noticeably cheaper on every scroll frame. */
+  backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px);
   border-bottom: 1px solid var(--border);
 }
 .nav-inner { height: 60px; display: flex; align-items: center; justify-content: space-between; gap: 14px; }
