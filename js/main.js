@@ -970,8 +970,8 @@
       if (!dragging) return;
       var dx = e.clientX - lastX, dy = e.clientY - lastY;
       lastX = e.clientX; lastY = e.clientY;
-      ay += dx * 0.009; ax -= dy * 0.009;
-      vay = dx * 0.0009; vax = -dy * 0.0009;
+      ay -= dx * 0.009; ax -= dy * 0.009;          // sphere follows the drag direction
+      vay = -dx * 0.0009; vax = -dy * 0.0009;       // ...and carries that spin as inertia
     });
     window.addEventListener('pointerup', function () { dragging = false; });
     window.addEventListener('pointercancel', function () { dragging = false; }); // touch scroll takes over
