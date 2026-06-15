@@ -1297,13 +1297,10 @@
   }
 
   /* ---------- scroll-driven FX: depth-of-field + field reaction (#7, #2) ---------- */
-  var _fieldBlur = -1, _heroBlur = -1;       // last applied (quantized) blur radii
   function resetScrollFx() {
     if (field3D) field3D.scrollZoom = 0;
-    _fieldBlur = -1; _heroBlur = -1;
-    var f = $('#field'); if (f) f.style.filter = '';
     var hero = document.querySelector('.page[data-page="home"] .hero');
-    if (hero) { hero.style.filter = ''; hero.style.opacity = ''; }
+    if (hero) { hero.style.transform = ''; hero.style.opacity = ''; }
   }
   function onScrollFx() {
     var y = scrollY();
@@ -1311,21 +1308,15 @@
     if (ENABLE_3D) {
       var vh = window.innerHeight || 800;
       var p = Math.min(1, y / (vh * 0.85));                      // hero-exit progress
-      // Quantize blur to whole-pixel steps and only touch the DOM when it
-      // actually changes. Re-rasterizing a full-screen blur on every scroll
-      // frame is the single biggest scroll-jank source; stepping it keeps the
-      // depth-of-field look while cutting raster work by ~10x.
-      var f = $('#field');
-      if (f) {
-        var fb = p > 0.02 ? Math.round(p * 3) : 0;               // 0..3px
-        if (fb !== _fieldBlur) { _fieldBlur = fb; f.style.filter = fb ? 'blur(' + fb + 'px)' : ''; }
-      }
       if (state.page === 'home') {
         var hero = document.querySelector('.page[data-page="home"] .hero');
         if (hero) {
-          var hb = p > 0.02 ? Math.round(p * 5) : 0;             // 0..5px
-          if (hb !== _heroBlur) { _heroBlur = hb; hero.style.filter = hb ? 'blur(' + hb + 'px)' : ''; }
-          hero.style.opacity = p > 0.02 ? String(1 - p * 0.5) : '';  // opacity is cheap — keep it smooth
+          // Recede the hero with transform + opacity only — both are
+          // GPU-composited (no repaint). The old per-scroll-frame blur() on
+          // the hero AND the full-screen field canvas forced a full
+          // re-rasterization every frame, which is what kept scrolling laggy.
+          hero.style.transform = p > 0.02 ? 'translateY(' + (p * -26).toFixed(1) + 'px)' : '';
+          hero.style.opacity = p > 0.02 ? String(1 - p * 0.5) : '';
         }
       }
       updateTrekParallax();

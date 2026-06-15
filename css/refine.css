@@ -6,14 +6,18 @@
    ============================================================ */
 
 /* ---------- FIX 3A / 4C — glassmorphism for project + stat cards (all devices) ---------- */
+/* Frosted look as a real tinted panel (a cyan wash over the opaque --panel)
+   instead of a live backdrop-filter. backdrop-filter re-blurs everything
+   behind every card on every scroll frame — with many cards on screen that
+   was the main scroll-lag source. This reads the same but costs nothing
+   while scrolling. */
 .proj-card, .stat-card {
-  background: rgba(0, 255, 200, 0.03);
+  background: linear-gradient(rgba(0, 255, 200, 0.04), rgba(0, 255, 200, 0.04)), var(--panel);
   border: 1px solid rgba(0, 255, 200, 0.15);
-  -webkit-backdrop-filter: blur(12px); backdrop-filter: blur(12px);
   box-shadow: inset 0 1px 0 rgba(0, 255, 200, 0.09), inset 0 0 30px rgba(0, 229, 255, 0.045);
 }
 html[data-theme="light"] .proj-card, html[data-theme="light"] .stat-card {
-  background: rgba(255, 255, 255, 0.55);
+  background: linear-gradient(rgba(255, 255, 255, 0.3), rgba(255, 255, 255, 0.3)), var(--panel);
   border-color: rgba(0, 144, 175, 0.22);
   box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.7), inset 0 0 30px rgba(0, 144, 175, 0.05);
 }
