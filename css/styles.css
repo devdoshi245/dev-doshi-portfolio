@@ -648,6 +648,10 @@ footer { border-top: 1px solid var(--border); }
   .hero { padding-top: 56px; gap: 44px; }
   .hero-portrait { margin-bottom: 40px; }
   .tick-l, .tick-r { display: none; }
+  /* uniform, full-width CTAs on phones (they otherwise sized to their text
+     and the resume button's min-width, so they looked ragged when stacked) */
+  .cta-row { flex-direction: column; align-items: stretch; }
+  .cta-row .btn { display: flex; align-items: center; justify-content: center; width: 100%; min-width: 0; }
 }
 
 @media (prefers-reduced-motion: reduce) {

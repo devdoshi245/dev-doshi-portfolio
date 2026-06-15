@@ -51,7 +51,7 @@ html[data-theme="light"] .fx-3d .proj-card::after {
 #tagSphereWrap[hidden] { display: none; }
 .tag-sphere {
   position: relative; width: 100%; height: 430px; margin: 0 auto;
-  perspective: 900px; cursor: grab; touch-action: none;
+  perspective: 900px; cursor: grab; touch-action: pan-y;
 }
 .tag-sphere:active { cursor: grabbing; }
 .tag-sphere-rot {

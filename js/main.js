@@ -503,6 +503,7 @@
     var locked = !$('#projectModal').hidden || !$('#trekModal').hidden || !$('#lightbox').hidden ||
       !$('#cmdModal').hidden || !$('#boot').hidden || state.menuOpen;
     document.body.style.overflow = locked ? 'hidden' : '';
+    document.body.classList.toggle('overlay-open', locked); // hides floating controls (ambient toggle)
     if (lenis) { if (locked) lenis.stop(); else lenis.start(); }
     // Pause the heavy WebGL field while something fully opaque covers it
     // (lightbox / boot) — nothing to see, no reason to render 3,000 points.
@@ -960,7 +961,10 @@
     }
     stage.addEventListener('pointerdown', function (e) {
       dragging = true; lastX = e.clientX; lastY = e.clientY;
-      try { stage.setPointerCapture(e.pointerId); } catch (er) {}
+      // Capturing a touch pointer would block the page from scrolling past the
+      // sphere. Only capture mouse/pen; on touch we let the browser handle
+      // vertical scroll (touch-action: pan-y) and just spin on horizontal drag.
+      if (e.pointerType !== 'touch') { try { stage.setPointerCapture(e.pointerId); } catch (er) {} }
     });
     stage.addEventListener('pointermove', function (e) {
       if (!dragging) return;
@@ -970,6 +974,7 @@
       vay = dx * 0.0009; vax = -dy * 0.0009;
     });
     window.addEventListener('pointerup', function () { dragging = false; });
+    window.addEventListener('pointercancel', function () { dragging = false; }); // touch scroll takes over
     raf = requestAnimationFrame(frame);
   }
 
