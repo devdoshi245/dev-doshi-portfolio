@@ -15,7 +15,7 @@
       id: 'hampta', name: 'Hampta Pass', location: 'Himachal Pradesh', alt: '14,100 FT',
       vibe: 'From lush Kullu greens to the stark moonscape of Lahaul — two worlds in one crossing.',
       desc: 'A dramatic valley-crossover trek at 14,100 ft. Green meadows and river crossings on the Kullu side, then over the pass into the barren, beautiful high desert of Lahaul & Spiti.',
-      cover: 'https://picsum.photos/id/1036/1200/800',
+      cover: 'assets/treks/hampta-pass/01.jpg',
       photos: [
         'assets/treks/hampta-pass/01.jpg',
         'assets/treks/hampta-pass/02.jpg',
@@ -31,7 +31,7 @@
       id: 'sarpass', name: 'Sar Pass, Kasol', location: 'Parvati Valley, Himachal Pradesh', alt: '13,800 FT',
       vibe: 'Pine forests, snowfields, and the Parvati Valley spread out far below.',
       desc: 'A classic Parvati Valley trek to 13,800 ft — through Grahan village and dense pine forest, across alpine meadows, ending with the legendary snow-slide descent to Biskeri Thach.',
-      cover: 'https://picsum.photos/id/1021/1200/800',
+      cover: 'assets/treks/sar-pass-kasol/01.jpg',
       photos: [
         'assets/treks/sar-pass-kasol/01.jpg',
         'assets/treks/sar-pass-kasol/02.jpg',
@@ -47,7 +47,7 @@
       id: 'buran', name: 'Buran Ghati', location: 'Himachal Pradesh', alt: '15,000 FT',
       vibe: 'An ice-wall rappel and meadows that go on forever.',
       desc: 'One of Himachal’s most thrilling passes at 15,000 ft — the endless Dayara meadows, the frozen Chandranahan lakes, and a heart-pounding rappel down the ice wall on the far side.',
-      cover: 'https://picsum.photos/id/1018/1200/800',
+      cover: 'assets/treks/buran-ghati/03-snow-peaks-panorama.jpg',
       photos: [
         'assets/treks/buran-ghati/01-camp-dog-meadow.jpg',
         'assets/treks/buran-ghati/02-pass-summit-snow.jpg',
