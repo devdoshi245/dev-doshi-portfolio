@@ -148,23 +148,8 @@
     }
     gsap.registerPlugin(ScrollTrigger);
 
-    /* Lenis smooth scroll wired into ScrollTrigger */
-    if (window.Lenis) {
-      var lenis = new Lenis({ lerp: 0.11 });
-      lenis.on('scroll', ScrollTrigger.update);
-      gsap.ticker.add(function (t) { lenis.raf(t * 1000); });
-      gsap.ticker.lagSmoothing(0);
-      document.documentElement.classList.add('lenis');
-      document.querySelectorAll('a[href^="#"]').forEach(function (a) {
-        a.addEventListener('click', function (e) {
-          var id = a.getAttribute('href');
-          if (id.length > 1 && document.querySelector(id)) {
-            e.preventDefault();
-            lenis.scrollTo(id, { offset: -10, duration: 1.2 });
-          }
-        });
-      });
-    }
+    /* Native scrolling only — no smooth-scroll library. Anchor jumps use
+       the browser's own scroll-behavior:smooth from the stylesheet. */
 
     /* hero line + reveal intro */
     gsap.timeline({ defaults: { ease: 'power3.out' } })

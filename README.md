@@ -9,9 +9,9 @@ Editorial paper-and-ink theme with one hot accent. Fraunces display
 type, Inter UI, JetBrains Mono details. Scroll-driven moments built
 with GSAP ScrollTrigger:
 
-- Pinned flagship case study (panels swap while the page holds)
-- Pinned Himalayan photo stack (images rise and fan into a pile)
-- Lenis smooth scrolling, reduced-motion safe
+- Sticky Himalayan photo gallery (the page holds while photos cycle,
+  then native scroll resumes)
+- Native browser scrolling everywhere, reduced-motion safe
 
 ## Structure
 
