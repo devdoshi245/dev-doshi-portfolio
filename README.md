@@ -1,45 +1,25 @@
-# Dev Doshi — Portfolio
+# Dev Doshi - Portfolio
 
-Personal portfolio of **Dev Doshi**, AI Automation & Agentic AI Systems Architect.
+Personal site of Dev Doshi, AI Automation & Agentic Systems Engineer.
+Live at [dev-doshi-portfolio.vercel.app](https://dev-doshi-portfolio.vercel.app/).
 
-A fully static, dependency-free site (vanilla HTML/CSS/JS) with a terminal-inspired
-"DOSHI.OS" aesthetic: boot sequence, particle network background, custom cursor,
-live ops log, animated stats, 14 filterable project case studies, Himalayan trek
-galleries with a lightbox, a command palette (⌘K / Ctrl+K / `/`), and a persistent
-dark/light theme.
+## Design
+
+Editorial paper-and-ink theme with one hot accent. Fraunces display
+type, Inter UI, JetBrains Mono details. Scroll-driven moments built
+with GSAP ScrollTrigger:
+
+- Pinned flagship case study (panels swap while the page holds)
+- Pinned Himalayan photo stack (images rise and fan into a pile)
+- Lenis smooth scrolling, reduced-motion safe
 
 ## Structure
 
 ```
-index.html        — single page; sections switched client-side (Home / Projects / About / Treks / Contact)
-css/styles.css    — all styles + dark/light theme tokens
-js/main.js        — all data and interactions (no frameworks, no build step)
-assets/           — headshot, favicon
+index.html      single page
+css/style.css   all styles
+js/site.js      data + interactions + scroll effects
+assets/         headshot, resume, trek photos
 ```
 
-## Run locally
-
-No build step. Open `index.html` directly in a browser, or serve the folder:
-
-```
-npx serve .
-```
-
-## Customizing
-
-- **Headshot** — replace `assets/headshot-duotone.png` (referenced in the hero of `index.html`).
-- **Trek photos** — in `js/main.js`, look for the `REPLACE WITH YOUR TREK PHOTOS` comment
-  at the top: each trek has a simple array of 6 image URLs (the first one is the card cover).
-  Current images are scenic placeholders from picsum.photos.
-- **Open Graph URL** — after deploying, update the `og:url` / `og:image` / `twitter:image`
-  absolute URLs in `index.html` to your real domain so link previews work.
-
-## Deploy (Vercel)
-
-This is a zero-config static site: import the repo in Vercel, leave framework as
-**Other**, no build command, output directory = repo root. See repo history / docs
-for details.
-
----
-
-© 2026 Dev Doshi — AI Automation & Agentic AI Systems
+No build step. Push to `main` ? Vercel deploys.
