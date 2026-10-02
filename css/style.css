@@ -333,8 +333,7 @@ h2{font-size:clamp(34px,5vw,58px)}
 
 .foot{
   background:var(--dark);color:var(--paper-on-dark);
-  padding:clamp(60px,9vh,100px) clamp(20px,4vw,56px) 0;
-  overflow:hidden;
+  padding:clamp(60px,9vh,100px) clamp(20px,4vw,56px) clamp(40px,6vh,70px);
 }
 .foot-grid{
   display:grid;grid-template-columns:1.6fr 1fr 1fr;
@@ -364,12 +363,6 @@ h2{font-size:clamp(34px,5vw,58px)}
   transition:color .2s,transform .2s;width:fit-content;
 }
 .foot-col a:hover{color:var(--paper-on-dark);transform:translateX(4px)}
-.foot-name{
-  font-family:var(--disp);font-weight:600;text-align:center;
-  font-size:clamp(40px,13vw,200px);line-height:.8;letter-spacing:-0.02em;
-  color:#211D1A;user-select:none;white-space:nowrap;
-  transform:translateY(8%);
-}
 @media (max-width:760px){
   .foot-grid{grid-template-columns:1fr;gap:34px}
 }
