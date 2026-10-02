@@ -167,19 +167,28 @@
       });
     });
 
-    /* growth band: count 1× -> 10× as it enters */
+    /* growth band: headline counts to 10×, then the receipt prints */
     var xEl = document.getElementById('xCount');
     if (xEl) {
       var xo = { v: 1 };
-      gsap.to(xo, {
-        v: 10, duration: 1.4, ease: 'power2.inOut',
-        scrollTrigger: { trigger: '.growth', start: 'top 72%' },
+      var gtl = gsap.timeline({
+        scrollTrigger: { trigger: '.growth', start: 'top 68%' }
+      });
+      gtl.from('.growth .kicker, .growth .growth-line, .growth .printer', {
+        opacity: 0, y: 30, duration: 0.7, stagger: 0.1, ease: 'power3.out'
+      }, 0);
+      gtl.to(xo, {
+        v: 10, duration: 1.2, ease: 'power2.inOut',
         onUpdate: function () { xEl.textContent = Math.round(xo.v); }
-      });
-      gsap.from('.growth > *', {
-        opacity: 0, y: 30, duration: 0.8, stagger: 0.1, ease: 'power3.out',
-        scrollTrigger: { trigger: '.growth', start: 'top 80%' }
-      });
+      }, 0.25);
+      /* print: receipt feeds out of the slot, steady like a printer */
+      gtl.from('#receipt', {
+        yPercent: -103, duration: 2.0, ease: 'power1.inOut'
+      }, 0.5);
+      /* total stamps once fully printed */
+      gtl.from('.rc-total', {
+        scale: 1.35, opacity: 0, duration: 0.35, ease: 'back.out(2.5)'
+      }, 2.35);
     }
 
     /* section headers drift in (.trek-head excluded — the pin owns it) */
