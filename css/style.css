@@ -202,6 +202,20 @@ h2{font-size:clamp(34px,5vw,58px)}
   .work-tools{padding-left:4px}
 }
 
+/* ---------- growth band ---------- */
+.growth{
+  padding:clamp(90px,15vh,160px) clamp(20px,4vw,56px);
+  text-align:center;border-top:1px solid var(--line);
+}
+.growth-line{font-size:clamp(34px,5.4vw,64px)}
+.growth-line em{color:var(--ink-soft)}
+.growth-x{
+  display:inline-block;color:var(--accent);
+  font-size:clamp(56px,9vw,120px);font-weight:600;line-height:1;
+  vertical-align:-0.06em;
+}
+.growth-sub{margin:22px auto 0;max-width:44ch}
+
 /* ---------- stack ---------- */
 .stack{background:var(--dark);color:var(--paper-on-dark);
   padding:clamp(80px,12vh,140px) clamp(20px,4vw,56px)}

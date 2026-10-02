@@ -167,6 +167,21 @@
       });
     });
 
+    /* growth band: count 1× -> 10× as it enters */
+    var xEl = document.getElementById('xCount');
+    if (xEl) {
+      var xo = { v: 1 };
+      gsap.to(xo, {
+        v: 10, duration: 1.4, ease: 'power2.inOut',
+        scrollTrigger: { trigger: '.growth', start: 'top 72%' },
+        onUpdate: function () { xEl.textContent = Math.round(xo.v); }
+      });
+      gsap.from('.growth > *', {
+        opacity: 0, y: 30, duration: 0.8, stagger: 0.1, ease: 'power3.out',
+        scrollTrigger: { trigger: '.growth', start: 'top 80%' }
+      });
+    }
+
     /* section headers drift in (.trek-head excluded — the pin owns it) */
     document.querySelectorAll('.sec-head, .contact > *').forEach(function (el) {
       gsap.from(el, {
