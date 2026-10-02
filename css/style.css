@@ -131,46 +131,30 @@ h2{font-size:clamp(34px,5vw,58px)}
 .stat-plus{font-family:var(--disp);font-size:clamp(20px,2.2vw,30px);color:var(--accent);font-weight:600}
 .stat-l{display:block;font-size:13px;color:var(--ink-soft);margin-top:4px}
 
-/* ---------- flagship (pinned dark) ---------- */
-.flagship{background:var(--dark);color:var(--paper-on-dark);position:relative}
-.flag-pin{
-  min-height:100svh;display:flex;flex-direction:column;justify-content:center;
-  padding:90px clamp(20px,4vw,56px) 60px;gap:clamp(26px,4vh,54px);
-}
-.flag-title{font-size:clamp(36px,5.6vw,72px)}
+/* ---------- flagship (dark, normal scroll) ---------- */
+.flagship{background:var(--dark);color:var(--paper-on-dark)}
+.flag-wrap{padding:clamp(80px,12vh,140px) clamp(20px,4vw,56px)}
+.flag-head{margin-bottom:clamp(40px,7vh,72px)}
+.flag-title{font-size:clamp(36px,5.6vw,72px);margin-top:4px}
 .flag-title em{color:var(--accent)}
-.flag-stage{position:relative;min-height:290px}
-.flag-panel{
-  position:absolute;inset:0;max-width:720px;
-  opacity:0;visibility:hidden;transform:translateY(46px);
+.flag-grid{
+  display:grid;grid-template-columns:1fr 1fr;
+  gap:clamp(34px,5vw,64px) clamp(34px,5vw,80px);
 }
-.flag-panel.active{opacity:1;visibility:visible;transform:none;
-  transition:opacity .5s,transform .6s cubic-bezier(.2,.7,.2,1)}
-.flag-panel.leaving{opacity:0;visibility:visible;transform:translateY(-36px);
-  transition:opacity .35s,transform .45s}
+.flag-panel{border-top:1px solid #2E2925;padding-top:24px}
 .flag-num{
   font-family:var(--mono);font-size:13px;color:var(--accent);
   letter-spacing:.14em;display:block;margin-bottom:14px;
 }
-.flag-panel h3{font-size:clamp(26px,3.4vw,44px);margin-bottom:16px}
-.flag-panel p{font-size:clamp(15.5px,1.4vw,18.5px);color:#B9B3A8;max-width:62ch}
-.flag-meta{display:flex;align-items:center;gap:26px;flex-wrap:wrap}
-.flag-dots{display:flex;gap:8px}
-.flag-dots i{width:26px;height:3px;border-radius:2px;background:#3A3531;transition:background .3s}
-.flag-dots i.on{background:var(--accent)}
-.flag-tags{display:flex;gap:8px;flex-wrap:wrap;margin-left:auto}
+.flag-panel h3{font-size:clamp(23px,2.6vw,34px);margin-bottom:14px}
+.flag-panel p{font-size:15.5px;color:#B9B3A8;max-width:56ch}
+.flag-meta{margin-top:clamp(40px,7vh,64px)}
+.flag-tags{display:flex;gap:8px;flex-wrap:wrap}
 .flag-tags span{
   font-family:var(--mono);font-size:11.5px;letter-spacing:.05em;
   border:1px solid #3A3531;color:#B9B3A8;padding:6px 12px;border-radius:999px;
 }
-
-/* mobile flagship: plain stack */
-@media (max-width:760px){
-  .flag-pin{min-height:0;padding-top:72px}
-  .flag-stage{min-height:0;display:flex;flex-direction:column;gap:38px}
-  .flag-panel{position:static;opacity:1;visibility:visible;transform:none}
-  .flag-dots{display:none}
-}
+@media (max-width:760px){.flag-grid{grid-template-columns:1fr}}
 
 /* ---------- work ---------- */
 .work{padding:clamp(80px,12vh,140px) clamp(20px,4vw,56px)}
@@ -237,34 +221,35 @@ h2{font-size:clamp(34px,5vw,58px)}
   border-bottom:1px solid #27221F}
 .stack-col li:last-child{border-bottom:0}
 
-/* ---------- treks ---------- */
+/* ---------- treks: sticky gallery ---------- */
 .treks{background:var(--paper)}
-.trek-pin{
-  min-height:100svh;position:relative;overflow:hidden;
-  display:flex;align-items:center;justify-content:center;
-  padding:80px clamp(20px,4vw,56px);
+.trek-sticky{
+  display:grid;grid-template-columns:1fr 1.15fr;align-items:center;
+  gap:clamp(30px,5vw,80px);min-height:100svh;
+  padding:90px clamp(20px,4vw,56px) 60px;
 }
-.trek-head{text-align:center;max-width:720px;margin:0 auto;position:relative}
-.trek-head .sec-sub{margin-left:auto;margin-right:auto}
-.trek-stack{position:absolute;inset:0;pointer-events:none;z-index:2}
-.stack-card{
-  position:absolute;left:50%;top:50%;
-  width:min(74vw,460px);border-radius:16px;overflow:hidden;
-  box-shadow:0 30px 70px rgba(20,16,10,.35);
-  transform:translate(-50%,120vh) rotate(var(--rot,0deg));
+.trek-count{
+  font-family:var(--mono);font-size:13px;letter-spacing:.14em;
+  color:var(--accent-ink);margin-top:26px;
 }
-.stack-card img{width:100%;aspect-ratio:4/3;object-fit:cover}
-.stack-card figcaption{
-  position:absolute;left:0;right:0;bottom:0;padding:30px 16px 12px;
-  font-family:var(--mono);font-size:11.5px;letter-spacing:.08em;color:#fff;
+.trek-frame{
+  position:relative;height:min(74vh,660px);
+  border-radius:18px;overflow:hidden;background:var(--paper-2);
+  box-shadow:0 24px 60px rgba(20,16,10,.18);
+}
+.gal-slide{position:absolute;inset:0;margin:0}
+.gal-slide img{width:100%;height:100%;object-fit:cover}
+.gal-slide figcaption{
+  position:absolute;left:0;right:0;bottom:0;padding:34px 18px 14px;
+  font-family:var(--mono);font-size:12px;letter-spacing:.08em;color:#fff;
   text-transform:uppercase;
-  background:linear-gradient(transparent,rgba(10,8,5,.72));
+  background:linear-gradient(transparent,rgba(10,8,5,.66));
 }
-.stack-card:nth-child(1){--rot:-4deg}
-.stack-card:nth-child(2){--rot:3deg}
-.stack-card:nth-child(3){--rot:-2.4deg}
-.stack-card:nth-child(4){--rot:4.2deg}
-.stack-card:nth-child(5){--rot:-3.2deg}
+/* initial offsets are set by JS (single writer); without JS, slides
+   fall back to a plain stacked list via .no-js rules below */
+.no-js .trek-sticky,.gal-static .trek-sticky{min-height:0}
+.no-js .trek-frame,.gal-static .trek-frame{height:auto;overflow:visible;box-shadow:none;background:none}
+.no-js .gal-slide,.gal-static .gal-slide{position:relative;margin-bottom:14px;border-radius:14px;overflow:hidden;transform:none!important}
 
 .trek-cards{
   display:grid;grid-template-columns:repeat(3,1fr);gap:18px;
@@ -285,8 +270,9 @@ h2{font-size:clamp(34px,5vw,58px)}
   text-transform:uppercase}
 @media (max-width:760px){
   .trek-cards{grid-template-columns:1fr}
-  .trek-stack{display:none}
-  .trek-pin{min-height:0;padding:76px 20px 34px}
+  .trek-sticky{grid-template-columns:1fr;min-height:0;padding:76px 20px 30px;align-items:start}
+  .trek-frame{height:58vh}
+  .trek-count{margin-top:14px}
 }
 
 /* ---------- contact ---------- */
@@ -336,7 +322,6 @@ h2{font-size:clamp(34px,5vw,58px)}
 @media (prefers-reduced-motion:reduce){
   .reveal{opacity:1;transform:none}
   .hero-title .line>span{transform:none!important}
-  .stack-card{transform:translate(-50%,-50%) rotate(var(--rot))!important}
   *{animation:none!important;transition:none!important}
 }
 

@@ -190,70 +190,52 @@
       });
     });
 
-    /* ---------- pinned sections (desktop only, responsive-safe) ---------- */
+    /* flagship: simple staggered entrance, no pinning */
+    gsap.from('.flag-panel', {
+      opacity: 0, y: 34, duration: 0.8, stagger: 0.12, ease: 'power3.out',
+      scrollTrigger: { trigger: '.flag-grid', start: 'top 82%' }
+    });
+
+    /* ---------- treks: sticky gallery (desktop + tablet) ----------
+       The section pins; ONLY the photo frame changes — each scroll
+       step slides the next photo up over the previous. After the
+       last photo the page scrolls on normally. */
     var mm = gsap.matchMedia();
     mm.add('(min-width: 761px)', function () {
-      /* flagship pinned panels */
-      var panels = gsap.utils.toArray('.flag-panel');
-      var dots = document.querySelectorAll('.flag-dots i');
-      var active = 0;
-      panels[0].classList.add('active');
-      function setPanel(n) {
-        if (n === active) return;
-        panels[active].classList.remove('active');
-        panels[active].classList.add('leaving');
-        (function (old) {
-          setTimeout(function () { panels[old].classList.remove('leaving'); }, 450);
-        })(active);
-        panels[n].classList.add('active');
-        dots.forEach(function (d, i) { d.classList.toggle('on', i === n); });
-        active = n;
-      }
-      ScrollTrigger.create({
-        trigger: '.flag-pin',
-        start: 'top top',
-        end: '+=' + (panels.length * 85) + '%',
-        pin: true,
-        scrub: true,
-        onUpdate: function (self) {
-          var n = Math.min(panels.length - 1, Math.floor(self.progress * panels.length));
-          setPanel(n);
-        }
-      });
-
-      /* treks pinned photo stack — cards rise and fan out like a photo pile */
-      var cards = gsap.utils.toArray('.stack-card');
-      var OX = [-46, 40, -26, 34, -14];
-      var ROT = [-4, 3, -2.4, 4.2, -3.2];
-      cards.forEach(function (card, i) {
-        gsap.set(card, {
-          xPercent: -50, yPercent: -50,
-          x: OX[i] || 0, y: '120vh',
-          rotation: ROT[i] || 0
-        });
-      });
+      var slides = gsap.utils.toArray('.gal-slide');
+      var idxEl = document.getElementById('galIdx');
+      gsap.set(slides.slice(1), { yPercent: 101 });
       var tl = gsap.timeline({
         scrollTrigger: {
-          trigger: '.trek-pin',
+          trigger: '.trek-sticky',
           start: 'top top',
-          end: '+=' + (cards.length * 62) + '%',
+          end: '+=' + ((slides.length - 1) * 70) + '%',
           pin: true,
-          scrub: 0.6
+          scrub: true,
+          onUpdate: function (self) {
+            var n = 1 + Math.min(slides.length - 1,
+              Math.round(self.progress * (slides.length - 1)));
+            if (idxEl) idxEl.textContent = n;
+          }
         }
       });
-      tl.to('.trek-head', { opacity: 0.12, scale: 0.97, duration: 0.8 }, 0.35);
-      cards.forEach(function (card, i) {
-        tl.to(card, { y: 0, ease: 'power2.out', duration: 1 }, i * 0.9);
-        if (i > 0) {
-          tl.to(cards[i - 1], { scale: 0.965, duration: 0.6 }, i * 0.9 + 0.2);
-        }
+      slides.forEach(function (slide, i) {
+        if (i === 0) return;
+        tl.to(slide, { yPercent: 0, ease: 'none', duration: 1 }, i - 1);
+        tl.to(slides[i - 1].querySelector('img'),
+          { yPercent: -10, scale: 1.04, ease: 'none', duration: 1 }, i - 1);
       });
-      tl.to({}, { duration: 0.4 });      /* breathing room at the end */
+      /* matchMedia reverts everything created in this context on exit */
+    });
 
-      return function () {               /* cleanup on breakpoint change */
-        panels.forEach(function (p) { p.classList.remove('active', 'leaving'); });
-        gsap.set(cards, { clearProps: 'all' });
-        gsap.set('.trek-head', { clearProps: 'all' });
+    /* mobile: no pin — slides become a plain stacked list (CSS .no-js look) */
+    mm.add('(max-width: 760px)', function () {
+      document.querySelector('.treks').classList.add('gal-static');
+      var cnt = document.querySelector('.trek-count');
+      if (cnt) cnt.style.display = 'none';
+      return function () {
+        document.querySelector('.treks').classList.remove('gal-static');
+        if (cnt) cnt.style.display = '';
       };
     });
 

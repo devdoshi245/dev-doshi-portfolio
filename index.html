@@ -20,7 +20,8 @@
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,500;0,9..144,600;1,9..144,400;1,9..144,500&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="css/style.css">
 </head>
-<body>
+<body class="no-js">
+<script>document.body.classList.remove('no-js');</script>
 
 <header class="nav" id="nav">
   <a class="nav-name" href="#top">Dev&nbsp;Doshi</a>
@@ -77,22 +78,22 @@
     </div>
   </section>
 
-  <!-- ============ FLAGSHIP (pinned) ============ -->
+  <!-- ============ FLAGSHIP ============ -->
   <section class="flagship" id="flagship">
-    <div class="flag-pin">
+    <div class="flag-wrap">
       <div class="flag-head">
         <p class="kicker light">Flagship system · built end-to-end, solo</p>
         <h2 class="flag-title">An autonomous GTM engine<br>for <em>Forager.ai</em></h2>
       </div>
-      <div class="flag-stage">
-        <article class="flag-panel" data-panel="0">
+      <div class="flag-grid">
+        <article class="flag-panel">
           <span class="flag-num">01</span>
           <h3>Signal detection</h3>
           <p>Ten live buying signals — hiring surges, funding rounds, tech adoption,
           engineering blogs, LinkedIn engagement — scanned across a 200+ company
           market, scored and ranked every month without a human touch.</p>
         </article>
-        <article class="flag-panel" data-panel="1">
+        <article class="flag-panel">
           <span class="flag-num">02</span>
           <h3>AI buyer committees</h3>
           <p>A Claude-powered picker researches every candidate on the live web,
@@ -100,14 +101,14 @@
           committee per account — product, engineering and data leaders, not
           job-title keyword matches.</p>
         </article>
-        <article class="flag-panel" data-panel="2">
+        <article class="flag-panel">
           <span class="flag-num">03</span>
           <h3>Autonomous monthly cycle</h3>
           <p>CRM refresh → enrichment waterfall → AI selection → personalized
           multi-channel outreach (email + LinkedIn) with reply detection and
           Slack alerts. One run a month, zero manual steps.</p>
         </article>
-        <article class="flag-panel" data-panel="3">
+        <article class="flag-panel">
           <span class="flag-num">04</span>
           <h3>Production grade</h3>
           <p>75+ Python modules, 280+ automated tests, CI/CD to Railway, and a
@@ -116,7 +117,6 @@
         </article>
       </div>
       <div class="flag-meta">
-        <div class="flag-dots"><i class="on"></i><i></i><i></i><i></i></div>
         <div class="flag-tags">
           <span>Python</span><span>Claude&nbsp;API</span><span>Supabase</span>
           <span>HubSpot</span><span>Railway</span><span>GitHub&nbsp;Actions</span>
@@ -165,20 +165,22 @@
     </div>
   </section>
 
-  <!-- ============ TREKS (pinned stack) ============ -->
+  <!-- ============ TREKS (sticky gallery) ============ -->
   <section class="treks" id="treks">
-    <div class="trek-pin">
-      <div class="trek-head">
+    <div class="trek-sticky">
+      <div class="trek-copy">
         <p class="kicker">Off the grid</p>
         <h2>When the systems run themselves,<br>I go where nothing does.</h2>
-        <p class="sec-sub">Multi-day Himalayan treks — river crossings, frozen lakes, passes above 15,000&nbsp;ft.</p>
+        <p class="sec-sub">Multi-day Himalayan treks — river crossings, frozen lakes,
+        passes above 15,000&nbsp;ft. Keep scrolling.</p>
+        <p class="trek-count"><span id="galIdx">1</span> / 5</p>
       </div>
-      <div class="trek-stack">
-        <figure class="stack-card"><img src="assets/treks/buran-ghati/03-snow-peaks-panorama.jpg" alt="Snow peaks panorama, Buran Ghati"><figcaption>Buran Ghati · 15,000 ft</figcaption></figure>
-        <figure class="stack-card"><img src="assets/treks/hampta-pass/02.jpg" alt="Hampta Pass valley"><figcaption>Hampta Pass · 14,100 ft</figcaption></figure>
-        <figure class="stack-card"><img src="assets/treks/buran-ghati/05-frozen-lake-balance.jpg" alt="Frozen Chandranahan lake"><figcaption>Chandranahan Lakes · frozen</figcaption></figure>
-        <figure class="stack-card"><img src="assets/treks/sar-pass-kasol/02.jpg" alt="Sar Pass snowfields"><figcaption>Sar Pass · 13,800 ft</figcaption></figure>
-        <figure class="stack-card"><img src="assets/treks/buran-ghati/01-camp-dog-meadow.jpg" alt="Camp in Dayara meadows"><figcaption>Dayara meadows · base camp</figcaption></figure>
+      <div class="trek-frame">
+        <figure class="gal-slide"><img src="assets/treks/buran-ghati/03-snow-peaks-panorama.jpg" alt="Snow peaks panorama, Buran Ghati"><figcaption>Buran Ghati · 15,000 ft</figcaption></figure>
+        <figure class="gal-slide"><img src="assets/treks/hampta-pass/02.jpg" alt="Hampta Pass valley"><figcaption>Hampta Pass · 14,100 ft</figcaption></figure>
+        <figure class="gal-slide"><img src="assets/treks/buran-ghati/05-frozen-lake-balance.jpg" alt="Frozen Chandranahan lake"><figcaption>Chandranahan Lakes · frozen</figcaption></figure>
+        <figure class="gal-slide"><img src="assets/treks/sar-pass-kasol/02.jpg" alt="Sar Pass snowfields"><figcaption>Sar Pass · 13,800 ft</figcaption></figure>
+        <figure class="gal-slide"><img src="assets/treks/buran-ghati/01-camp-dog-meadow.jpg" alt="Camp in Dayara meadows"><figcaption>Dayara meadows · base camp</figcaption></figure>
       </div>
     </div>
     <div class="trek-cards" id="trekCards"></div>
