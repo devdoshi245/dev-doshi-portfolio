@@ -1,4 +1,4 @@
-# Dev Doshi - Portfolio
+# Dev Doshi — Portfolio
 
 Personal site of Dev Doshi, AI Automation & Agentic Systems Engineer.
 Live at [dev-doshi-portfolio.vercel.app](https://dev-doshi-portfolio.vercel.app/).
@@ -22,4 +22,4 @@ js/site.js      data + interactions + scroll effects
 assets/         headshot, resume, trek photos
 ```
 
-No build step. Push to `main` ? Vercel deploys.
+No build step. Push to `main` → Vercel deploys.
