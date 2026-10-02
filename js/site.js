@@ -137,6 +137,21 @@
     if (e.key === 'ArrowRight') stepLb(1);
   });
 
+  /* ================= footer clock (IST) ================= */
+  var clockEl = document.getElementById('footClock');
+  if (clockEl) {
+    var tickClock = function () {
+      try {
+        clockEl.textContent = new Intl.DateTimeFormat('en-IN', {
+          hour: '2-digit', minute: '2-digit', hour12: false,
+          timeZone: 'Asia/Kolkata'
+        }).format(new Date());
+      } catch (e) { clockEl.textContent = ''; }
+    };
+    tickClock();
+    setInterval(tickClock, 30000);
+  }
+
   /* ================= motion ================= */
   function startMotion() {
     if (reduced || !window.gsap || !window.ScrollTrigger) {
